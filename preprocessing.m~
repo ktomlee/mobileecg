@@ -1,0 +1,14 @@
+%Pre-processing
+
+ecg = load('1002603.txt');
+
+N = (ecg);
+fs = 500;
+t = (1:N);
+
+%row, column
+leadI = ecg((1:N),2);
+
+plot(leadI);
+
+%t = (0:N-1)/fs;
