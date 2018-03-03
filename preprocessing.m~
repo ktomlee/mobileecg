@@ -24,14 +24,12 @@ d = designfilt('bandstopiir','FilterOrder',2, ...
 
 fvtool(d,'Fs',fs)
 
-%buttLoop = filtfilt(d,openLoop);
-%plot(t,openLoop,t,buttLoop)
-%ylabel 'Voltage (V)', xlabel 'Time (s)', title 'Open-Loop Voltage';
-
 figure(1)
 while i < 14
-    plot(t, C{i});
-    title 'Leads Plot', ylabel 'Voltage (mV)', xlabel 'Time (sec)';
+    filt_C = filtfilt(d,C{i});
+    plot(t,C{i},t,filt_C)
+    %plot(t, C{i});
+    title 'Leads Plot, Filtered 60Hz', ylabel 'Voltage (mV)', xlabel 'Time (sec)';
     hold on
     i=i+1;
 end
