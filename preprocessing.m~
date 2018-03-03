@@ -18,22 +18,32 @@ plot(leadI);
 
 C=num2cell(N,1); %call C{1}, C{2} etc... up to 13 (C{1} is time counter)
 
+d = designfilt('bandstopiir','FilterOrder',2, ...
+               'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
+               'DesignMethod','butter','SampleRate',fs);
+
+fvtool(d,'Fs',fs)
+
+%buttLoop = filtfilt(d,openLoop);
+%plot(t,openLoop,t,buttLoop)
+%ylabel 'Voltage (V)', xlabel 'Time (s)', title 'Open-Loop Voltage';
+
+figure(1)
 while i < 14
-    figure(1)
     plot(t, C{i});
     title 'Leads Plot', ylabel 'Voltage (mV)', xlabel 'Time (sec)';
     hold on
     i=i+1;
 end
 
+figure(2)
 while j < 14
     [p,s,mu] = polyfit((1:numel(C{j}))',C{j},6);
     f_y = polyval(p,(1:numel(C{j}))',[],mu);
 
     D = C{j} - f_y;        % Detrend data
-    figure(2)
     plot(t, D);
+    title('Detrended ECG Signal'), xlabel('Samples'), ylabel('Voltage(mV)')
     hold on
     j=j+1;
-    title('Detrended ECG Signal'), xlabel('Samples'), ylabel('Voltage(mV)')
 end
