@@ -3,20 +3,21 @@
 ecg = load('1002603.txt');
 
 N = (ecg);
+L = length(N);
 fs = 500;
 %t = (1:N);
+t = (0:L-1)/fs;
+i=2;
 
 %row, column
 leadI = ecg((1:N),2);
-
 plot(leadI);
-%t = (0:N-1)/fs;
 
 C=num2cell(N,1); %call C{1}, C{2} etc... up to 13 (C{1} is time counter)
 
-i=2;
 while i < 14
-    plot(C{i});
+    plot(t, C{i});
     hold on
     i=i+1;
 end
+title 'Leads Plot', ylabel 'Voltage (mV)', xlabel 'Time (sec)';
