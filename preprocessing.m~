@@ -12,3 +12,6 @@ leadI = ecg((1:N),2);
 plot(leadI);
 
 %t = (0:N-1)/fs;
+
+st=num2cell(N,1); %call st{1}, st{2} etc... up to 13 (st{1} is time counter)
+plot(st{2});
