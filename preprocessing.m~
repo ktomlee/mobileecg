@@ -1,13 +1,16 @@
 %Pre-processing
 
-ecg = load('1002603.txt');
+ecg = load('1002867.txt');
 
 N = (ecg);
 L = length(N);
 fs = 500;
 %t = (1:N);
 t = (0:L-1)/fs;
+
 i=2;
+j=2;
+D = zeros(L, 13);
 
 %row, column
 leadI = ecg((1:N),2);
@@ -16,8 +19,21 @@ plot(leadI);
 C=num2cell(N,1); %call C{1}, C{2} etc... up to 13 (C{1} is time counter)
 
 while i < 14
+    figure(1)
     plot(t, C{i});
+    title 'Leads Plot', ylabel 'Voltage (mV)', xlabel 'Time (sec)';
     hold on
     i=i+1;
 end
-title 'Leads Plot', ylabel 'Voltage (mV)', xlabel 'Time (sec)';
+
+while j < 14
+    [p,s,mu] = polyfit((1:numel(C{j}))',C{j},6);
+    f_y = polyval(p,(1:numel(C{j}))',[],mu);
+
+    D = C{j} - f_y;        % Detrend data
+    figure(2)
+    plot(t, D);
+    hold on
+    j=j+1;
+    title('Detrended ECG Signal'), xlabel('Samples'), ylabel('Voltage(mV)')
+end
