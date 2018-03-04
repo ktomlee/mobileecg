@@ -21,15 +21,12 @@ C=num2cell(N,1); %call C{1}, C{2} etc... up to 13 (C{1} is time counter)
 d = designfilt('bandstopiir','FilterOrder',2, ...
                'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
                'DesignMethod','butter','SampleRate',fs);
-
-fvtool(d,'Fs',fs)
-
 figure(1)
 while i < 14
     filt_C = filtfilt(d,C{i});
-    plot(t,C{i},t,filt_C)
-    %plot(t, C{i});
-    title 'Leads Plot, Filtered 60Hz', ylabel 'Voltage (mV)', xlabel 'Time (sec)';
+    %plot(t,C{i},t,filt_C);
+    plot(t, C{i});
+    title 'Leads Plot, Filtered 60Hz', ylabel 'Voltage (uV)', xlabel 'Time (sec)';
     hold on
     i=i+1;
 end
@@ -38,10 +35,23 @@ figure(2)
 while j < 14
     [p,s,mu] = polyfit((1:numel(C{j}))',C{j},6);
     f_y = polyval(p,(1:numel(C{j}))',[],mu);
-
+    
     D = C{j} - f_y;        % Detrend data
     plot(t, D);
-    title('Detrended ECG Signal'), xlabel('Samples'), ylabel('Voltage(mV)')
+    title('Detrended ECG Signal'), xlabel('Time (sec)'), ylabel('Voltage(uV)')
     hold on
     j=j+1;
 end
+
+%60Hz filter response
+fvtool(d,'Fs',fs)
+
+%<0.5Hz filter and response
+
+%Peak detection - check for max and min amplitudes
+
+%Flat line detection
+
+%QRS detection
+%Checks in place for 3 common problems with electrodes switch/placement
+%(research another)
