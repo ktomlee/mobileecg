@@ -48,10 +48,14 @@ fvtool(d,'Fs',fs)
 
 %<0.5Hz filter and response
 
-%Peak detection - check for max and min amplitudes
+%Peak detection - check for max and min amplitudes ; 
+%Minimum peak detection -for inverted leads?
 
 %Flat line detection
 
 %QRS detection
 %Checks in place for 3 common problems with electrodes switch/placement
 %(research another)
+
+% Patients heartbeat, frequency of beats- in gui
+
