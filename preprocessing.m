@@ -4,10 +4,9 @@ ecg = load('1002867.txt');
 
 L = length(ecg);
 fs = 500;
-fn = 250;
 t = (1:L);
 t1=(0:L-1)/fs;
-Fv = linspace(0, 1, fix(L/2)+1)*fn;
+Fv = linspace(0, 1, fix(L/2)+1)*(fs/2);
 Iv = 1:length(Fv);
 
 %row, column
@@ -20,43 +19,60 @@ fcutlow=0.5;   %low cut frequency in Hz
 fcuthigh=100;   %high cut frequency in Hz
 [b,a]=butter(order,[fcutlow,fcuthigh]/(fs/2),'bandpass');
 
-ftleadI = filter(b,a,leadI);
+ftleadI = filter(b,a,leadI);  %BP filter time domain
+ftleadII = filter(b,a,leadII);  %BP filter time domain
+
 fleadI = fft(leadI)/L;
-ffleadI = filter(b,a,fleadI);
+ffleadI = filter(b,a,fleadI);  %BP filter freq domain
 
 w = (60/(fs/2));
 bw = w;
 [num,den]=iirnotch(w,bw); % notch filter implementation 
 
 fftleadI = filter(num, den, ftleadI); % notch filter time
+fftleadII = filter(num, den, ftleadII); % notch filter time
+
 fffleadI = filter(num, den, ffleadI); % notch filter freq
 
-hh = fftleadI;
-j=[];           %loop initialing, having all the value zero in the array
-time=0;          %loop initialing, having all the value zero in the array
-th=0.6*max(fftleadI);  %thresold setting at 45 percent of maximum value
+hhI = fftleadI;
+hhII = fftleadII;
+peakI=[];           %loop initialing, having all the value zero in the array
+peakII=[];
+timeI=0;            %loop initialing, having all the value zero in the array
+timeII=0;
+thI=0.6*max(fftleadI);  %thresold setting at 60 percent of maximum value
+thII=0.6*max(fftleadII);
 
-for i=2:L-1 % length selected for comparison  
-    % dropping first ie i=1:L-1  point because hh(1-1) 
-   % in the next line  will be zero which is not appreciable in matlab 
-    if((hh(i)>hh(i+1))&&(hh(i)>hh(i-1))&&(hh(i)>th))  
-% condition, i should be> then previous(i-1),next(i+1),thrsold point;
-        j(i)=hh(i);                                   
-%if condition satisfy store hh(i)in place of j(i)value whichis initially 0;
-       
-        time(i)=[i-1]/fs;           %position stored where peak value met;              
-      
+for i=2:L-1   
+    if((hhI(i)>hhI(i+1))&&(hhI(i)>hhI(i-1))&&(hhI(i)>thI))  
+        peakI(i)=hhI(i);                                   
+        timeI(i)=[i-1]/fs;           %position stored where peak value met;              
+    end
+    
+    if((hhII(i)>hhII(i+1))&&(hhII(i)>hhII(i-1))&&(hhII(i)>thII))  
+        peakII(i)=hhII(i);                                   
+        timeII(i)=[i-1]/fs;           %position stored where peak value met;              
     end
 end
- j(j==0)=[];               % neglect all zeros from array;
- time(time==0)=[];     % neglect all zeros from array;
-m=(time)';               % converting rows in column;
+peakI(peakI==0)=[];           % neglect all zeros from array;
+peakII(peakII==0)=[];
+
+timeI(timeI==0)=[];     % neglect all zeros from array;
+timeII(timeII==0)=[]; 
 
 figure(1);
+subplot(2,1,1);
 plot(t1,fftleadI);
 hold on;                 % hold the plot and wait for next instruction;
-plot(time,j,'*r'); 
-title('Peak Detection on Filtered Data');
+plot(timeI,peakI,'*r'); 
+title('Peak Detection on Filtered LeadI');
+xlabel('Time (sec)');
+
+subplot(2,1,2);
+plot(t1,fftleadII);
+hold on;                 % hold the plot and wait for next instruction;
+plot(timeII,peakII,'*r'); 
+title('Peak Detection on Filtered LeadII');
 xlabel('Time (sec)');
 
 
