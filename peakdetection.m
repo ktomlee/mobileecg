@@ -26,7 +26,7 @@ t1=(0:N1-1)/Fs;
 
 % Peak detection algorithm 
 % For more detailsor detailed explanation on this look into 
-% Matlab for beginers 
+% Matlab for beginners 
 hh=ecg_smooth;
  j=[];           %loop initialing, having all the value zero in the array
 time=0;          %loop initialing, having all the value zero in the array
