@@ -46,7 +46,23 @@ end
 %60Hz filter response
 fvtool(d,'Fs',fs)
 
-%<0.5Hz filter and response
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%<0.5Hz filter and response / bandpass filter design
+fc_lower = 0.1; %lower cutoff frequency
+fc_upper = 100; %upper cutoff frequency
+
+Butter_order = 6;
+[A,B,C,D] = butter(6,[fc_lower fc_upper]/(fs/2));
+d = designfilt('bandpassiir','FilterOrder',6, ...
+    'HalfPowerFrequency1',0.1,'HalfPowerFrequency2',100, ...
+    'SampleRate',500);
+
+sos = ss2sos(A,B,C,D);
+fvt = fvtool(sos, d, 'fs', 500);
+legend(fvt, 'butter', 'designfilt');
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Peak detection - check for max and min amplitudes ; 
 %Minimum peak detection -for inverted leads?
