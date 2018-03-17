@@ -3,6 +3,8 @@
 ecg = load('1002867.txt');
 
 L = length(ecg);
+Lead=num2cell(ecg,1);
+
 fs = 500;
 t = (1:L);
 t1=(0:L-1)/fs;
@@ -22,6 +24,15 @@ fcuthigh=100;   %high cut frequency in Hz
 ftleadI = filter(b,a,leadI);  %BP filter time domain
 ftleadII = filter(b,a,leadII);  %BP filter time domain
 
+i = 2;
+
+filtLead={};
+
+while i < 14
+    filtLead{i-1} = filter(b,a,C{i});
+    i = i+1;
+end
+
 fleadI = fft(leadI)/L;
 ffleadI = filter(b,a,fleadI);  %BP filter freq domain
 
@@ -34,6 +45,30 @@ fftleadII = filter(num, den, ftleadII); % notch filter time
 
 fffleadI = filter(num, den, ffleadI); % notch filter freq
 
+i = 1;
+peak={};
+time={};
+threshold=[];
+while i < 13
+    peak{1,i} = [];
+    time{1,i} = [];
+    threshold(i) = 0.6*max(filtLead{1,i});
+    
+    for j = 2: L-1
+        if((filtLead{1,i}(j,1) > filtLead{1,i}(j+1,1))&&(filtLead{1,i}(j,1) > filtLead{1,i}(j-1,1)) && (filtLead{1,i}(j,1) > threshold(i)))  
+        %if((filtLead{1,i}(j,1) > filtLead{1,i}(j+1,1)) && (filtLead{1,i}(j,1) > filtLead{1,i}(j-1,1)) && ) 
+            peak{1,i}(j,1) = filtLead{1,i}(j,1);                                   
+            time{1,i}(j,1)=(j-1)/fs;           %position stored where peak value met;              
+        end
+        j=j+1;
+    end
+  
+    peak{1,i}(peak{1,i} == 0) =[];
+    time{1,i}(time{1,i}==0)=[];
+    
+    i = i+1;
+end
+
 hhI = fftleadI;
 hhII = fftleadII;
 peakI=[];           %loop initialing, having all the value zero in the array
@@ -42,6 +77,8 @@ timeI=0;            %loop initialing, having all the value zero in the array
 timeII=0;
 thI=0.6*max(fftleadI);  %thresold setting at 60 percent of maximum value
 thII=0.6*max(fftleadII);
+
+
 
 for i=2:L-1   
     if((hhI(i)>hhI(i+1))&&(hhI(i)>hhI(i-1))&&(hhI(i)>thI))  
@@ -60,41 +97,17 @@ peakII(peakII==0)=[];
 timeI(timeI==0)=[];     % neglect all zeros from array;
 timeII(timeII==0)=[]; 
 
+
 figure(1);
-subplot(2,1,1);
-plot(t1,fftleadI);
-hold on;                 % hold the plot and wait for next instruction;
-plot(timeI,peakI,'*r'); 
-title('Peak Detection on Filtered LeadI');
-xlabel('Time (sec)');
+i = 1;
+while i < 13
+   subplot(12,1,i);
+   plot(t1, filtLead{i});
+   hold on;
+   plot(time{i}, peak{i}, '*r');
+   i = i+1;
+end
 
-subplot(2,1,2);
-plot(t1,fftleadII);
-hold on;                 % hold the plot and wait for next instruction;
-plot(timeII,peakII,'*r'); 
-title('Peak Detection on Filtered LeadII');
-xlabel('Time (sec)');
-
-
-%figure(2);
-%subplot(3,2,1);
-%plot(t,leadI);
-%title('Time Not Filtered');
-
-%subplot(3,2,3);
-%plot(t, ftleadI);
-%title('Time BP Filtered');
-
-%subplot(3,2,5);
-%plot(t, fftleadI);
-%title('Notch + BP Filtered');
-%subplot(3,2,2);
-%plot(Fv,abs(fleadI(Iv))*2);
-%title('Freq Not Filtered');
-%subplot(3,2,4);
-%plot(Fv,abs(ffleadI(Iv))*2);
-%title('Freq BP Filtered');
-%subplot(3,2,6);
 %plot(Fv,abs(fffleadI(Iv))*2);
 %title('Freq Notch + BP Filtered');
 
