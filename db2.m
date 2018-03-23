@@ -7,14 +7,11 @@ Lead=num2cell(ecg,1);
 
 fs = 500;
 t = (1:L);
-t1=(0:L-1)/fs;
+t1=(0:(L/2)-1)/fs;
 Fv = linspace(0, 1, fix(L/2)+1)*(fs/2);
 Iv = 1:length(Fv);
 
-order = 6;
-fcutlow=0.5;   %low cut frequency in Hz
-fcuthigh=100;   %high cut frequency in Hz
-[b,a]=butter(order,[fcutlow,fcuthigh]/(fs/2),'bandpass');
+
 
 bandstop = designfilt('bandstopiir','FilterOrder',2, ...
                'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
@@ -30,11 +27,13 @@ bw = w;
 [num,den]=iirnotch(w,bw); % notch filter implementation 
 
 i = 2;
-filtLead={};
+db2Lead={};
 
 while i < 14
-    filtLead{1,i-1} = filtfilt(bandstop,Lead{1,i});
-    filtLead{1,i-1} = filtfilt(bandpass,filtLead{1,i-1});
+    
+    [Lo_D,Hi_D] = wfilters('haar','d'); 
+    [ca1,cd1] = dwt(Lead{1,i},Lo_D,Hi_D);
+    db2Lead{1,i-1} = ca1;
     i = i+1;
 end
 
@@ -45,31 +44,29 @@ threshold=[];
 while i < 13
     peak{1,i} = [];
     time{1,i} = [];
-    threshold(i) = 0.6*max(filtLead{1,i});
+    threshold(i) = 0.5*max(db2Lead{1,i});
     
-    for j = 2: L-1
-        if((filtLead{1,i}(j,1) > filtLead{1,i}(j+1,1))&&(filtLead{1,i}(j,1) > filtLead{1,i}(j-1,1)) && (filtLead{1,i}(j,1) > threshold(i)))  
-            peak{1,i}(j,1) = filtLead{1,i}(j,1);                                   
-            time{1,i}(j,1)=(j-1)/fs;           %position stored where peak value met;              
+    for j = 2: (L/2)-1
+        if((db2Lead{1,i}(j,1) > db2Lead{1,i}(j+1,1))&&(db2Lead{1,i}(j,1) > db2Lead{1,i}(j-1,1)) && (db2Lead{1,i}(j,1) > threshold(i)))  
+            peak{1,i}(j,1) = db2Lead{1,i}(j,1);                                   
+            time{1,i}(j,1)=(j-1)/(fs);           %position stored where peak value met;              
         end
         j=j+1;
     end
   
     peak{1,i}(peak{1,i} == 0) =[];
-    time{1,i}(time{1,i}==0)=[];
+    time{1,i}(time{1,i} == 0)=[];
     
     i = i+1;
 end
 
-figure(2);
+figure(1);
 i = 1;
-while i < 13
+while i < 2
    subplot(12,1,i);
-   plot(t1, filtLead{i});
+   plot(t1, db2Lead{i});
    hold on;
    plot(time{i}, peak{i}, '*r');
-   hold on;
-   plot(t1, Lead{1,i+1}, 'LineWidth',3);
    i = i+1;
 end
 
