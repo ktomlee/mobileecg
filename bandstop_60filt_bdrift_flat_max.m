@@ -162,18 +162,18 @@ min_avg = zeros(1,12);
 
 %Lead Initialization
 %filtLead = lead data after all filtering
-l_1=D{:,1};    %Lead 1
-l_2=D{1,2};    %Lead 2
-l_3=D{1,3};    %Lead 3
-l_4=D{1,4};    %aVR
-l_5=D{1,5};    %avL
-l_6=D{1,6};    %avF
-l_7=D{1,7};    %V1
-l_8=D{1,8};    %V2
-l_9=D{1,9};    %V3
-l_10=D{1,10};  %V4
-l_11=D{1,11};  %V5
-l_12=D{1,12};  %V6
+l_1=D(:,1);    %Lead 1
+l_2=D(1,2);    %Lead 2
+l_3=D(1,3);    %Lead 3
+l_4=D(1,4);    %aVR
+l_5=D(1,5);    %avL
+l_6=D(1,6);    %avF
+l_7=D(1,7);    %V1
+l_8=D(1,8);    %V2
+l_9=D(1,9);    %V3
+l_10=D(1,10);  %V4
+l_11=D(1,11);  %V5
+l_12=D(1,12);  %V6
 
 %Search for maximum of peak values in peak[] of 12 leads
 while k < 13
@@ -192,7 +192,7 @@ end
 k=1;
 
 % Low amplitude condition and flag setting:
-% If three leads are considered low amplitude (less than 125mV), F_min is set to 1, and
+% If three leads are considered low amplitude (less than 125mV), F_Min is set to 1, and
 % 12-lead ECG is considered unacceptable due to possible poor skin-electrode
 % contact.
 checklow = 0;
@@ -201,7 +201,7 @@ while k < 13
         checklow = checklow+1;
     end
     if checklow == 3
-        F_min = 1;
+        F_Min = 1;
     end
     k=k+1;
 end
@@ -211,15 +211,30 @@ end
 % F_max is set to 1, and 12-lead ECG is considered unacceptable due to motion artifacts or EMG
 % noise.
 checkhigh = 0;
+x=0;
+k=1;
+
 while k < 13
-    if max_ampl(k) < 125
-        checklow = checklow+1;
+    while x < 49
+        count_1 = 1+(x*100);
+        count_2 = 100+(x*100);
+        %column_x = x+1;
+        
+        %200msec = 100 samples out of 5000 samples per D value
+        %s_mat = D(1:100, 1);    %trial
+        submatrix_D = D(count_1:count_2, k);
+        max_submatrix_D = max(submatrix_D);
+        
+        if (max_submatrix_D > 2000)
+            F_Max = 1;
+        end
+        x=x+1;
     end
-    if checkhigh == 3
-        F_min = 1;
-    end
+    x=0;
     k=k+1;
+    
 end
+k=1;
 
 %QRS Detection
 %[~,locs_Rwave] = findpeaks(ECG_data,'MinPeakHeight',0.5,...
