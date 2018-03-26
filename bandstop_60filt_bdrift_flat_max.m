@@ -4,7 +4,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Load data from text file folder
-ecg = load('1038105.txt');
+ecg = load('1002867.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -59,7 +59,7 @@ threshold=[];
 while i < 13
     peak{1,i} = [];
     time{1,i} = [];
-    threshold(i) = 0.6*max(filtLead{1,i});
+    threshold(i) = 0.5*max(filtLead{1,i});
     
     for j = 2: L-1
         if((filtLead{1,i}(j,1) > filtLead{1,i}(j+1,1))&&(filtLead{1,i}(j,1) > filtLead{1,i}(j-1,1)) && (filtLead{1,i}(j,1) > threshold(i)))  
@@ -266,11 +266,23 @@ while k < 13
 end
 
 
-%QRS Detection
-%[~,locs_Rwave] = findpeaks(ECG_data,'MinPeakHeight',0.5,...
- %                                   'MinPeakDistance',200);
+%QRS Detection using thresholding to find peaks of interest
+[~,locs_Rwave] = findpeaks(ECG_data,'MinPeakHeight',0.5,...
+                                    'MinPeakDistance',200);
 
 
+% Beats per minute calculation:
 % Patients heartbeat, frequency of beats- in gui
 t_total = max(t1);  %msec
-bpm = (k/10)*t_total;  %peaks in total time of signal N
+bpm = length(peak{1,1})*6;  %number of peaks for 6*10sec sample
+
+
+
+
+
+
+
+
+
+
+
