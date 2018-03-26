@@ -4,7 +4,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Load data from text file folder
-ecg = load('1002867.txt');
+ecg = load('1038105.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -175,6 +175,65 @@ l_10=D(1,10);  %V4
 l_11=D(1,11);  %V5
 l_12=D(1,12);  %V6
 
+% Saturation (high amplitude) condition and flag setting:
+% If any lead is considered high amplitude (greater than 2mV for excerpt of continuous 200 msec ),
+% F_max is set to 1, and 12-lead ECG is considered unacceptable due to motion artifacts or EMG
+% noise.
+checkhigh = 0;
+x=0;
+k=1;
+
+while k < 13
+    while x < 50
+        count_1 = 1+(x*100);
+        count_2 = 100+(x*100);
+        %column_x = x+1;
+        
+        %200msec = 100 samples out of 5000 samples per D value
+        %s_mat = D(1:100, 1);    %trial
+        submatrix_D = D(count_1:count_2, k);
+        max_submatrix_D = max(submatrix_D);
+        
+        if (max_submatrix_D > 2000)
+            F_Max = 1;
+        end
+        x=x+1;
+    end
+    x=0;
+    k=k+1;
+    
+end
+
+% Flat line condition and flag setting:
+% If any lead is considered to to a constant 0 voltage for at least 1sec
+% length, F_Flat is set to 1, and 12-lead ECG is considered unacceptable.
+checkflatline = 0;
+y=0;
+k=1;
+
+while k < 13
+    while y < 10
+        f_count_1 = 1+(y*500);
+        f_count_2 = 500+(y*500);
+        %column_y = y+1;
+        
+        %200msec = 100 samples out of 5000 samples per D value
+        %s_mat = D(1:100, 1);    %trial
+        f_submatrix_D = D(f_count_1:f_count_2, k);
+        f_max_submatrix_D = max(f_submatrix_D);
+        
+        if (f_max_submatrix_D == 0)
+            F_Flat = 1;
+        end
+        y=y+1;
+    end
+    y=0;
+    k=k+1;
+    
+end
+k=1;
+
+%
 %Search for maximum of peak values in peak[] of 12 leads
 while k < 13
     max_ampl(k) = max(peak{1,k});
@@ -206,35 +265,6 @@ while k < 13
     k=k+1;
 end
 
-% Saturation (high amplitude) condition and flag setting:
-% If any lead is considered high amplitude (greater than 2mV for excerpt of continuous 200 msec ),
-% F_max is set to 1, and 12-lead ECG is considered unacceptable due to motion artifacts or EMG
-% noise.
-checkhigh = 0;
-x=0;
-k=1;
-
-while k < 13
-    while x < 49
-        count_1 = 1+(x*100);
-        count_2 = 100+(x*100);
-        %column_x = x+1;
-        
-        %200msec = 100 samples out of 5000 samples per D value
-        %s_mat = D(1:100, 1);    %trial
-        submatrix_D = D(count_1:count_2, k);
-        max_submatrix_D = max(submatrix_D);
-        
-        if (max_submatrix_D > 2000)
-            F_Max = 1;
-        end
-        x=x+1;
-    end
-    x=0;
-    k=k+1;
-    
-end
-k=1;
 
 %QRS Detection
 %[~,locs_Rwave] = findpeaks(ECG_data,'MinPeakHeight',0.5,...
