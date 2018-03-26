@@ -15,6 +15,16 @@ Fv = linspace(0, 1, fix(L/2)+1)*(fs/2);
 Iv = 1:length(Fv);
 Lead=num2cell(ecg,1);
 
+%Flags for signal discrepencies
+%All flags set to 0 for initial conditions of 12 leads
+F_RA_LA = 0;    %RA and LA lead reversal
+F_RA_LL = 0;    %RA and LL lead reversal
+F_EMG = 0;      %Max amplitude set
+F_Flat = 0;     %Flat signal line
+F_Min = 0;      %Minimum amplitude on 3 channels
+F_Max = 0;      %Saturation on 1 channel
+F_Baseline = 0; %Baseline drift too large on any lead
+
 % Filtering variables
 order = 6;
 fcutlow=0.5;   %low cut frequency in Hz
@@ -41,7 +51,6 @@ fvtool(bandpass, 'fs', fs);
 %60Hz filter impulse response
 impz(bandpass,50)
 
-        
 i = 2;
 filtLead={};
 
@@ -106,7 +115,7 @@ plot(t1, F{5});
 
 %Initialize detrended lead data matrix 'D' to be zeros
 D = zeros(L, 12);
-
+% Baseline drift greater than 2.5mV in any lead
 j=1;
 figure
 while j < 13
@@ -127,10 +136,13 @@ while j < 13
     
     hold on
     
+    %Baseline drift flag check
+    if f_y(:,j) > 2500
+        F_Baseline = 1;
+    end
+    
     j=j+1;
 end
-j=1;
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Processing
@@ -138,15 +150,6 @@ j=1;
 %flat line detection
 %Input should be D - detended/filtered data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%Flags for signal discrepencies
-%All flags set to 0 for initial conditions of 12 leads
-F_RA_LA = 0;   %RA and LA lead reversal
-F_RA_LL = 0;   %RA and LL lead reversal
-F_EMG = 0;     %Max amplitude set
-F_Flat = 0;    %Flat signal line
-F_Min = 0;     %Minimum amplitude on 3 channels
-F_Max = 0;     %Saturation on 1 channel
 
 %Indices set
 k=1;
@@ -264,12 +267,10 @@ while k < 13
     end
     k=k+1;
 end
-
-
+                                
 %QRS Detection using thresholding to find peaks of interest
 [~,locs_Rwave] = findpeaks(ECG_data,'MinPeakHeight',0.5,...
                                     'MinPeakDistance',200);
-
 
 % Beats per minute calculation:
 % Patients heartbeat, frequency of beats- in gui
