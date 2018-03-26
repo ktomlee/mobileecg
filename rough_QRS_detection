@@ -1,0 +1,29 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% QRS Detection using thresholding to find peaks of interest
+% 100 = min peak height of R wave; 300 = less than minimum distance between
+% subsequent peaks
+
+ecg = load('1002867.txt');
+fs = 500;
+L= length(ecg);
+time = (0:L-1)/fs;
+Lead=num2cell(ecg,1); %lead 1 = Lead{2}
+f = Lead{2};
+
+i = 1;
+%while i < 2
+    [~,locs_Rwave] = findpeaks(f,'MinPeakHeight',100,...
+                                        'MinPeakDistance',300);
+    figure
+    hold on 
+    plot(f)
+    plot(locs_Rwave,f(locs_Rwave),'rv','MarkerFaceColor','r')
+    %plot(locs_Swave,f(locs_Swave),'rs','MarkerFaceColor','b')
+    grid on
+    legend('ECG Signal','R-waves','S-waves')
+    xlabel('Samples')
+    ylabel('Voltage(mV)')
+    title('R-wave and S-wave in Noisy ECG Signal')
+    
+    
+%end
