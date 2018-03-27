@@ -5,7 +5,7 @@
 
 %Load data from text file folder
 %ecg = load('1003574.txt');
-ecg = load('1002867.txt');
+ecg = load('1004502.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -128,8 +128,8 @@ while (i < 13) && (j < 15)
     ydb2{1,i} = imodwt(db2rec{1,i},'db2');
 
     %peak detection
-    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',30,'MinPeakDistance',200);
-    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',30,'MinPeakDistance',200);
+    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',30,'MinPeakDistance',150);
+    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',20,'MinPeakDistance',150);
     
     figure(i)
     clf
@@ -417,7 +417,7 @@ while i<13
     freq_peak = freq_max - freq_min; %WRONG
     peak_num = length(peaks{1,i});
     
-    if (peak_num > 46) ||  freq_peak > 40 % 290bpm and greater, or frequency amplitude of lead is above 40
+    if (peak_num > 46) ||  freq_peak > 150 % 290bpm and greater, or frequency amplitude of lead is above 40
         F_EMG = 1;
     end
     if (length(peaks{1,i}) > 5)
@@ -454,37 +454,45 @@ while i < 13
 end
 avg_bpm = (sum_bpm*6)/12; %averaging of all 12 leads number of peaks, for contingency
 
-%12 Lead plot
+%12 Lead plot with lead names
 figure
 subplot(6,2,1);
 plot(t1, l_1);
-title('12 Lead ECG Plot')
+title('Lead I','FontSize', 8)
 subplot(6,2,2);
 plot(t1, l_2);
+title('Lead II','FontSize', 8)
 subplot(6,2,3);
 plot(t1, l_3);
-ylabel('Voltage (mV)')
+title('Lead III','FontSize', 8)
 subplot(6,2,4);
 plot(t1, l_4);
+title('Lead aVR','FontSize', 8)
 subplot(6,2,5);
 plot(t1, l_5);
+title('Lead aVL','FontSize', 8)
 subplot(6,2,6);
 plot(t1, l_6);
+title('Lead aVF','FontSize', 8)
 subplot(6,2,7);
 plot(t1, l_7);
+title('Lead V1','FontSize', 8)
 subplot(6,2,8);
 plot(t1, l_8);
+title('Lead V2','FontSize', 8)
 subplot(6,2,9);
 plot(t1, l_9);
+title('Lead V3','FontSize', 8)
 subplot(6,2,10);
 plot(t1, l_10);
+title('Lead V4','FontSize', 8)
 subplot(6,2,11);
 plot(t1, l_11);
+title('Lead V5','FontSize', 8)
 subplot(6,2,12);
 plot(t1, l_12);
+title('Lead V6','FontSize', 8)
 xlabel('Time (sec)')
-
-
 
 %Wavelet just for visualization of approximations of compression on D
 %matrix
