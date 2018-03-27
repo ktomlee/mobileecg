@@ -2,8 +2,11 @@ acceptable = load('RECORDS-acceptable.txt');
 unacceptable = load('RECORDS-unacceptable.txt');
 
 TotalECG = {};
+results = [];
+pass = 0;
 
 l = 1;
+
 
 while l < 774
         TotalECG{1,l} = load([num2str(acceptable(l,1)), '.txt']);
@@ -34,6 +37,7 @@ while l < 774
     F_Max = 0;      %Saturation on 1 channel
     F_Baseline = 0; %Baseline drift too large on any lead
     F_Contact = 0;
+    F_Acceptable = 0;
 
     F=num2cell(ecg,1);
 
@@ -74,7 +78,7 @@ while l < 774
     i = 1;
 
     while (i < 13) && (j < 15)
-        db2{1,i} = modwt(ecg(:,i+1),'db2',5);
+        db2{1,i} = modwt(ecg(:,i+1),'db2',6);
         db2rec{1,i} = zeros(size(db2{1,i}));
         db2rec{1,i}(4:5,:) = db2{1,i}(4:5,:);
         ydb2{1,i} = imodwt(db2rec{1,i},'db2');
@@ -84,7 +88,7 @@ while l < 774
         [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',20,'MinPeakDistance',150);
 
         figure(i)
-        clf
+        clf(i)
         subplot(1,2,1);
         plot(t,ydb2{1,i}(1,:))
         hold on
@@ -279,23 +283,57 @@ while l < 774
     end
     k=1;
 
+    k=1;
+    i=1;
+    divisor=12;
+    
+%Set peaks and speaks empty cells to 0 element to fix error
+while k < 13
+    if isempty(peaks{1,k} == 1)
+        peaks{1,k}=0;
+    end
+    if isempty(speaks{1,k} == 1)
+        speaks{1,k}=0;
+    end
+    k=k+1;
+end
+k=1;
+
+%Set dividing factor to refelct only non-zero cell elements of peaks and
+%speaks
+while i < 13
+   if max(peaks{1,i}) == 0
+        divisor = divisor - 1;
+   end
+   i=i+1;
+end        
+
     %Search for maximum of peak values in peak[] of 12 leads
     while k < 13
-        max_ampl(k) = max(peaks{1,k});
-        min_ampl(k) = min(peaks{1,k});
-        max_ampl_s(k) = max(speaks{1,k});
-        min_ampl_s(k) = min(speaks{1,k});
+        
+        if(size(speaks{1,k}) == 0)
+            speaks{1,k} = zeros(1,12);
+        end
+    
+        if(size(peaks{1,k}) == 0)
+            peaks{1,k} = zeros(1,12);
+        end
+        
+        max_ampl(k) = max(D(:,k));
+        min_ampl(k) = min(D(:,k));
+        max_ampl_s(k) = max(D(:,k));
+        min_ampl_s(k) = min(D(:,k));
 
-        % Voltage averaging of peaks for 12 leads
+        % Voltage averaging of peaks for 12 leads    
         max_sum(k) = sum(peaks{1,k});
-        max_avg(k) = max_sum(k)/12;
+        max_avg(k) = max_sum(k)/divisor;
         min_sum(k) = sum(peaks{1,k});
-        min_avg(k) = min_sum(k)/12;
+        min_avg(k) = min_sum(k)/divisor;
 
         max_sum_s(k) = sum(speaks{1,k});
-        max_avg_s(k) = max_sum_s(k)/12;
+        max_avg_s(k) = max_sum_s(k)/divisor;
         min_sum_s(k) = sum(speaks{1,k});
-        min_avg_s(k) = min_sum_s(k)/12;
+        min_avg_s(k) = min_sum_s(k)/divisor;
 
         k=k+1;
     end
@@ -371,7 +409,7 @@ while l < 774
         i=i+1;
     end
     avg_bpm = (sum_bpm*6)/12; %averaging of all 12 leads number of peaks, for contingency
-
+    
     if(F_RA_LA || F_RA_LL || F_EMG || F_Flat || F_Min || F_Max || F_Baseline || ~F_Contact == 1)
         fprintf('This ECG data is unacceptable \n');
         if(F_RA_LA)
@@ -408,7 +446,11 @@ while l < 774
 
     else
         fprintf('This ECG data is acceptable \n');
+        F_Acceptable = 1;
+        pass = pass + 1;
     end
+    
+    results(l,:) =  [F_Acceptable F_RA_LA F_RA_LL F_EMG F_Flat F_Max F_Baseline ~F_Contact];
 
 l = l + 1;
 
