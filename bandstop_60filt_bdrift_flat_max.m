@@ -5,7 +5,7 @@
 
 %Load data from text file folder
 %ecg = load('1003574.txt');
-ecg = load('1004502.txt');
+ecg = load('1009404.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -359,10 +359,17 @@ k=1;
 
 %Search for maximum of peak values in peak[] of 12 leads
 while k < 13
+    if isempty(peaks{1,k} == 1)
+        peaks{1,k}=0;
+    end
+    if isempty(speaks{1,k} == 1)
+        speaks{1,k}=0;
+    end
+    
     max_ampl(k) = max(peaks{1,k});
     min_ampl(k) = min(peaks{1,k});
     max_ampl_s(k) = max(speaks{1,k});
-    min_ampl_s(k) = max(speaks{1,k});
+    min_ampl_s(k) = min(speaks{1,k});
     
     % Voltage averaging of peaks for 12 leads
     max_sum(k) = sum(peaks{1,k});
