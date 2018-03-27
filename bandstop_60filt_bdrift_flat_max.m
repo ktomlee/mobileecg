@@ -121,7 +121,6 @@ locs = {};
 i = 1;
 
 while (i < 13) && (j < 15)
-
     db2{1,i} = modwt(ecg(:,i+1),'db2',5);
     db2rec{1,i} = zeros(size(db2{1,i}));
     db2rec{1,i}(4:5,:) = db2{1,i}(4:5,:);
@@ -309,7 +308,6 @@ l_12=D(:,12);  %V6: small Q wave, smaller R than V5, smaller S than V5, upright 
 % F_max is set to 1, and 12-lead ECG is considered unacceptable due to motion artifacts or EMG
 % noise.
 x=0;
-
 while k < 13
     while x < 50
         count_1 = 1+(x*100);
@@ -335,10 +333,8 @@ end
 % Flat line condition and flag setting:
 % If any lead is considered to to a constant 0 voltage for at least 1sec
 % length, F_Flat is set to 1, and 12-lead ECG is considered unacceptable.
-checkflatline = 0;
 y=0;
 k=1;
-
 while k < 13
     while y < 10
         f_count_1 = 1+(y*500);
