@@ -356,8 +356,9 @@ while k < 13
     
 end
 k=1;
-
-%Search for maximum of peak values in peak[] of 12 leads
+i=1;
+divisor=12;
+%Set peaks and speaks empty cells to 0 element to fix error
 while k < 13
     if isempty(peaks{1,k} == 1)
         peaks{1,k}=0;
@@ -365,22 +366,34 @@ while k < 13
     if isempty(speaks{1,k} == 1)
         speaks{1,k}=0;
     end
-    
+    k=k+1;
+end
+k=1;
+%Set dividing factor to refelct only non-zero cell elements of peaks and
+%speaks
+while i < 13
+   if max(peaks{1,i}) == 0
+        divisor = divisor - 1;
+   end
+   i=i+1;
+end        
+%Search for maximum of peak values in peak[] of 12 leads
+while k < 13    
     max_ampl(k) = max(peaks{1,k});
     min_ampl(k) = min(peaks{1,k});
     max_ampl_s(k) = max(speaks{1,k});
     min_ampl_s(k) = min(speaks{1,k});
     
-    % Voltage averaging of peaks for 12 leads
+    % Voltage averaging of peaks for 12 leads    
     max_sum(k) = sum(peaks{1,k});
-    max_avg(k) = max_sum(k)/12;
+    max_avg(k) = max_sum(k)/divisor;
     min_sum(k) = sum(peaks{1,k});
-    min_avg(k) = min_sum(k)/12;
+    min_avg(k) = min_sum(k)/divisor;
     
     max_sum_s(k) = sum(speaks{1,k});
-    max_avg_s(k) = max_sum_s(k)/12;
+    max_avg_s(k) = max_sum_s(k)/divisor;
     min_sum_s(k) = sum(speaks{1,k});
-    min_avg_s(k) = min_sum_s(k)/12;
+    min_avg_s(k) = min_sum_s(k)/divisor;
     
     k=k+1;
 end
