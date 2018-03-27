@@ -4,7 +4,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Load data from text file folder
-ecg = load('1003574.txt');
+%ecg = load('1003574.txt');
+ecg = load('1002867.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -24,6 +25,7 @@ F_Flat = 0;     %Flat signal line
 F_Min = 0;      %Minimum amplitude on 3 channels
 F_Max = 0;      %Saturation on 1 channel
 F_Baseline = 0; %Baseline drift too large on any lead
+F_Contact = 0;
 
 %Debugging: Simple plot of original ecg lead 4
 F=num2cell(ecg,1);
@@ -46,18 +48,18 @@ bandstop = designfilt('bandstopiir','FilterOrder',2, ...
                'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
                'DesignMethod','butter','SampleRate',fs);
 %60Hz notch filter magnitude response
-fvtool(bandstop,'Fs',fs)
+%fvtool(bandstop,'Fs',fs)
 %60Hz notch filter impulse response
-impz(bandstop,50)
+%impz(bandstop,50)
 
 %1.0 - 100Hz bandpass filter
 bandpass = designfilt('bandpassiir','FilterOrder',4, ...
     'HalfPowerFrequency1',1.5,'HalfPowerFrequency2',100, ...
     'SampleRate',fs);
 %Bandpass filter magnitude response
-fvtool(bandpass, 'fs', fs);
+%fvtool(bandpass, 'fs', fs);
 %Bandpass filter impulse response
-impz(bandpass,50)
+%impz(bandpass,50)
 
 %Bandpass IIR Filter: Unused
 %bpFilt = designfilt('bandpassiir','FilterOrder',20, ...
@@ -126,8 +128,8 @@ while (i < 13) && (j < 15)
     ydb2{1,i} = imodwt(db2rec{1,i},'db2');
 
     %peak detection
-    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',30,'MinPeakDistance',300);
-    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',30,'MinPeakDistance',300);
+    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',30,'MinPeakDistance',200);
+    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',30,'MinPeakDistance',200);
     
     figure(i)
     clf
@@ -203,15 +205,21 @@ while j < 13
     
     D(:,j) = C{j} - f_y(:,j);   % Detrend data using polyfit curve f_y
 
-    subplot(2,1,1);
+    subplot(3,1,1);
     plot(t1, D);
     title('Detrended ECG Signal'), xlabel('Time (sec)'), ylabel('Voltage(uV)')
     axis([0 10 -500 500]);  %Mutual axes
+    hold on
     
-    subplot(2,1,2);
+    subplot(3,1,2);
     plot(t1, C{j});
     title('Original ECG Signal'), xlabel('Time (sec)'), ylabel('Voltage(uV)')
     axis([0 10 -500 500]);
+    hold on
+    
+    subplot(3,1,3);
+    plot(t1,f_y);
+    title('Trend line');
     
     hold on
     
@@ -242,12 +250,11 @@ while i < 14
     i=i+1;
 end
 %Fast fourier transform to find signal frequency prpoerties after filtering
-
 i=1;
 figure
 while i < 13
-    fresult = fft(filtLead{1,i});
-    P2 = abs(fresult/L);
+    fresult_new = fft(filtLead{1,i});
+    P2 = abs(fresult_new/L);
     P1 = P2(1:L/2+1);
     P1(2:end-1) = 2*P1(2:end-1);
     f = fs*(0:(L/2))/L;  % frequency domain f
@@ -256,6 +263,7 @@ while i < 13
     title('Single-Sided Amplitude Spectrum: All leads after filtering')
     xlabel('Frequency (Hz)')
     ylabel('Amplitude |P1(f)|')
+    legend('1','2','3','4','5', '6', '7','8','9','10','11','12')
     axis([0 100 0 inf]);
     
     i=i+1;
@@ -394,17 +402,28 @@ end
 % EMG Noise condition:
 % If peak[] length is greater than 100; peaks too frequent to be bpm; set
 % EMG noise flag to 1.
-% Heart rate between range of 30bbm - 300bpm is reasonably within the human range;
-% Resting heartrate of 100-300bpm can indicate the patient is tachycardic.
-k=1;
-while k < 13
-    if (length(peaks{1,k}) > 50) % 390bpm or 30bpm 
+% Heart rate between range of 30bpm - 290bpm is reasonably within the human range;
+% Resting heartrate of 100bpm and greater can however indicate the patient is tachycardic.
+i=1;
+while i<13
+    fresult_new = fft(filtLead{1,i});
+    
+    P2 = abs(fresult_new/L);
+    P1 = P2(1:L/2+1);
+    P1(2:end-1) = 2*P1(2:end-1);
+    
+    freq_max = max(P1);
+    freq_min =min(P1);
+    freq_peak = freq_max - freq_min; %WRONG
+    peak_num = length(peaks{1,i});
+    
+    if (peak_num > 46) ||  freq_peak > 40 % 290bpm and greater, or frequency amplitude of lead is above 40
         F_EMG = 1;
     end
-    if (length(peaks{1,k}) < 5)
+    if (length(peaks{1,i}) > 5)
         F_Contact = 1;
     end
-    k=k+1;
+    i=i+1;
 end
 
 % Reversed RA and LL limb lead check: Inverted P-QRS in Lead II (lead shows
