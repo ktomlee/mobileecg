@@ -4,7 +4,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Load data from text file folder
-ecg = load('1045434.txt');
+ecg = load('1002867.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -69,47 +69,82 @@ while i < 14
     i = i+1;
 end
 
-i = 1;
-peak={};
-time={};
-threshold=[];
-
-while i < 13
-    peak{1,i} = [];
-    time{1,i} = [];
-    threshold(i) = 0.5*max(filtLead{1,i});
+%Peak finder V1: Thresholding value same across all channels and patients
+%i = 1;
+%peak={};
+%time={};
+%threshold=[];
+%while i < 13
+%    peak{1,i} = [];
+%    time{1,i} = [];
+%    threshold(i) = 0.5*max(filtLead{1,i});
+%    for j = 2: L-1
+%        if((filtLead{1,i}(j,1) > filtLead{1,i}(j+1,1))&&(filtLead{1,i}(j,1) > filtLead{1,i}(j-1,1)) && (filtLead{1,i}(j,1) > threshold(i)))  
+%            peak{1,i}(j,1) = filtLead{1,i}(j,1);                                   
+%            time{1,i}(j,1)=(j-1)/fs;     %position stored where peak value met;              
+%        end
+%        j=j+1;
+%    end
+%    peak{1,i}(peak{1,i} == 0) =[];
+%    time{1,i}(time{1,i}==0)=[];
     
-    for j = 2: L-1
-        if((filtLead{1,i}(j,1) > filtLead{1,i}(j+1,1))&&(filtLead{1,i}(j,1) > filtLead{1,i}(j-1,1)) && (filtLead{1,i}(j,1) > threshold(i)))  
-            peak{1,i}(j,1) = filtLead{1,i}(j,1);                                   
-            time{1,i}(j,1)=(j-1)/fs;     %position stored where peak value met;              
-        end
-        j=j+1;
-    end
-  
-    peak{1,i}(peak{1,i} == 0) =[];
-    time{1,i}(time{1,i}==0)=[];
-    
-    i = i+1;
-end
+%    i = i+1;
+%end
+%i = 1;
+%figure(2)
+%while i < 13
+%   subplot(12,1,i);
+%   plot(t1, filtLead{i});
+%   hold on;
+%   plot(time{i}, peak{i}, '*r');
+%   hold on;
+%   plot(t1, Lead{1,i+1}, 'LineWidth',3);
+%   i = i+1;
+%end
 
+% Peak finder V2: QRS Detection using thresholding to find peaks of interest&
+% Daubechies wavelet transfor of ecg signal beore implementation of findpeaks
+% function; 30 = min peak height of R wave; 300 = less than minimum distance 
+% between subsequent peaks
+% Parameter initialization
+db2 = {};
+db2rec = {};
+ydb2 = {};
+peaks = {};
+locs = {};
 i = 1;
-figure(2)
 while i < 13
-   subplot(12,1,i);
-   plot(t1, filtLead{i});
-   hold on;
-   plot(time{i}, peak{i}, '*r');
-   hold on;
-   plot(t1, Lead{1,i+1}, 'LineWidth',3);
-   i = i+1;
+
+    db2{1,i} = modwt(ecg(:,i+1),'db2',5);
+    db2rec{1,i} = zeros(size(db2{1,i}));
+    db2rec{1,i}(4:5,:) = db2{1,i}(4:5,:);
+    ydb2{1,i} = imodwt(db2rec{1,i},'db2');
+
+    %peak detection
+    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',30,'MinPeakDistance',300);
+    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',30,'MinPeakDistance',300);
+    
+    figure(i)
+    clf
+    subplot(1,2,1);
+    plot(t,ydb2{1,i}(1,:))
+    hold on
+    plot(locs{1,i},peaks{1,i},'ro')
+    hold on
+    plot(slocs{1,i},-speaks{1,i},'bo')
+    grid
+    %legend('ECG Signal','R-waves','S-waves','Location','northeastoutside')
+    xlabel('Seconds')
+
+    subplot(1,2,2);
+    plot(t, ecg(:,i+1));
+     grid
+    xlabel('Seconds')
+    
+    i = i + 1;
+    
 end
-
-%Tom's
-%figure(3)
-%plot(Fv,abs(fffleadI(Iv))*2);
-%title('Freq Notch + BP Filtered');
-
+i = 1; 
 
 % Baseline drift elimination:
 % Output is 'D' the detrended signal for 12 leads, after filtering
@@ -119,6 +154,7 @@ C=num2cell(filt_lead_mat,1); %call C{1}...C{12}
 
 %Initialize detrended lead data matrix 'D' to be zeros
 D = zeros(L, 12);
+%f_y = zeros(L, 12);
 % Baseline drift greater than 2.5mV in any lead
 j=1;
 figure
@@ -169,18 +205,18 @@ min_avg = zeros(1,12);
 
 %Lead Initialization
 %filtLead = lead data after all filtering
-l_1=D(:,1);    %Lead 1
-l_2=D(1,2);    %Lead 2
-l_3=D(1,3);    %Lead 3
-l_4=D(1,4);    %aVR
-l_5=D(1,5);    %avL
-l_6=D(1,6);    %avF
-l_7=D(1,7);    %V1
-l_8=D(1,8);    %V2
-l_9=D(1,9);    %V3
-l_10=D(1,10);  %V4
-l_11=D(1,11);  %V5
-l_12=D(1,12);  %V6
+l_1=D(:,1);    %Lead I: Small Q wave, largest R, small or no S, upright T
+l_2=D(1,2);    %Lead II: No Q wave, large R, small or no S, upright T 
+l_3=D(1,3);    %Lead III: Small Q wave, variable R, variable S, variable T
+l_4=D(1,4);    %aVR: Variable Q wave, small R, large S, inverted T 
+l_5=D(1,5);    %avL: Variable Q wave, varialbe R wave, none to large S, variable T
+l_6=D(1,6);    %avF: small Q wave, small R, variable S, variable T
+l_7=D(1,7);    %V1: QS complex, small R, large S, variable T
+l_8=D(1,8);    %V2: No Q wave, larger R than V1, large S, unpright T
+l_9=D(1,9);    %V3: No Q wave, variable S, variable R, upright T
+l_10=D(1,10);  %V4: No Q wave, larger R than V3, smaller S than V3, upright T
+l_11=D(1,11);  %V5: Small Q wave, larger R than V4, smaller S than V4, upright T
+l_12=D(1,12);  %V6: small Q wave, smaller R than V5, smaller S than V5, upright T
 
 % Saturation (high amplitude) condition and flag setting:
 % If any lead is considered high amplitude (greater than 2mV for excerpt of continuous 200 msec ),
@@ -239,17 +275,16 @@ while k < 13
 end
 k=1;
 
-%
 %Search for maximum of peak values in peak[] of 12 leads
 while k < 13
-    max_ampl(k) = max(peak{1,k});
-    min_ampl(k) = min(peak{1,k});
+    max_ampl(k) = max(peaks{1,k});
+    min_ampl(k) = min(peaks{1,k});
     
     % Voltage averaging of peaks for 12 leads
-    max_sum(k) = sum(peak{1,k});
+    max_sum(k) = sum(peaks{1,k});
     max_avg(k) = max_sum(k)/12;
     
-    min_sum(k) = sum(peak{1,k});
+    min_sum(k) = sum(peaks{1,k});
     min_avg(k) = min_sum(k)/12;
     
     k=k+1;
@@ -262,7 +297,7 @@ k=1;
 % contact.
 checklow = 0;
 while k < 13
-    min_length = length(peak{k});
+    min_length = length(peaks{k});
     if max_ampl(k) < 125 || min_length < 4  %thresholding check: if not enough peaks detected, or min ampl = low saturation
         checklow = checklow+1;
     end
@@ -277,28 +312,28 @@ end
 % EMG noise flag to 1.
 k=1;
 while k < 13
-    if length(peak{1,k}) > 100
+    if length(peaks{1,k}) > 100
         F_EMG = 1;
     end
     k=k+1;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% QRS Detection using thresholding to find peaks of interest
-% 100 = min peak height of R wave; 300 = less than minimum distance between
-% subsequent peaks
+% Beats per minute calculation:
+% Patients heartbeat, frequency of beats- in gui
+t_total = max(t1);  %msec; generally 10sec but can be smaller
+sum_bpm = 0;
+avg_bpm = 0;
 i = 1;
-%while i < 2
- %   [~,locs_Rwave] = findpeaks(D(1,:),'MinPeakHeight',100,...
-  %                                      'MinPeakDistance',300);
-  %  figure
-  %  hold on 
-  %  plot(t1,D)
-  %  plot(locs_Rwave,D(locs_Rwave),'rv','MarkerFaceColor','r')
-%end
 
-%Wavelet for pre-peak finder; 
-%Wavelet to get approximation and details from D matrix
+while i < 13
+    peaks_i_length = length(peaks{1,i});
+    sum_bpm = sum_bpm + peaks_i_length;  %number of peaks for 6*10sec sample = extension to 60sec of data
+    i=i+1;
+end
+avg_bpm = (sum_bpm*6)/12;
+
+%Wavelet just for visualization of approximations of compression on D
+%matrix
 i = 1;
 while i < 13  
     D_wave=num2cell(D,1);
@@ -308,7 +343,6 @@ while i < 13
     [a4,d4] = dwt(a3, 'db2');
     [a5,d5] = dwt(a4, 'db2');
     i=i+1;
-
     %Plot approximations of ecg signal for a1-a5 daub wavelet coefficients
     %to determine best compression factor (a3)
     %figure
@@ -324,12 +358,3 @@ while i < 13
     %subplot(5,1,5);
     %plot(a5);
 end
-i=0;
-
-% Beats per minute calculation:
-% Patients heartbeat, frequency of beats- in gui
-% Change to new code
-t_total = max(t1);  %msec
-bpm = length(peak{1,1})*6;  %number of peaks for 6*10sec sample
-
-
