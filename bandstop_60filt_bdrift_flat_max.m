@@ -284,17 +284,17 @@ min_avg = zeros(1,12);
 %Lead Initialization
 %filtLead = lead data after all filtering
 l_1=D(:,1);    %Lead I: Small Q wave, medium R, small S, upright T
-l_2=D(1,2);    %Lead II: No Q wave, large R, small S, upright T 
-l_3=D(1,3);    %Lead III: Small Q wave, variable R, variable S, variable T
-l_4=D(1,4);    %aVR: Variable Q wave, small R, large S, inverted T 
-l_5=D(1,5);    %avL: Variable Q wave, variable R wave, none to large S, variable T
-l_6=D(1,6);    %avF: small Q wave, small R, variable S, variable T
-l_7=D(1,7);    %V1: QS complex, small R, large S, variable T
-l_8=D(1,8);    %V2: No Q wave, larger R than V1, large S, unpright T
-l_9=D(1,9);    %V3: No Q wave, variable S, variable R, upright T
-l_10=D(1,10);  %V4: No Q wave, larger R than V3, smaller S than V3, upright T
-l_11=D(1,11);  %V5: Small Q wave, larger R than V4, smaller S than V4, upright T
-l_12=D(1,12);  %V6: small Q wave, smaller R than V5, smaller S than V5, upright T
+l_2=D(:,2);    %Lead II: No Q wave, large R, small S, upright T 
+l_3=D(:,3);    %Lead III: Small Q wave, variable R, variable S, variable T
+l_4=D(:,4);    %aVR: Variable Q wave, small R, large S, inverted T 
+l_5=D(:,5);    %aVL: Variable Q wave, variable R wave, none to large S, variable T
+l_6=D(:,6);    %aVF: small Q wave, small R, variable S, variable T
+l_7=D(:,7);    %V1: QS complex, small R, large S, variable T
+l_8=D(:,8);    %V2: No Q wave, larger R than V1, large S, unpright T
+l_9=D(:,9);    %V3: No Q wave, variable S, variable R, upright T
+l_10=D(:,10);  %V4: No Q wave, larger R than V3, smaller S than V3, upright T
+l_11=D(:,11);  %V5: Small Q wave, larger R than V4, smaller S than V4, upright T
+l_12=D(:,12);  %V6: small Q wave, smaller R than V5, smaller S than V5, upright T
 
 % Saturation (high amplitude) condition and flag setting:
 % If any lead is considered high amplitude (greater than 2mV for excerpt of continuous 200 msec ),
@@ -357,13 +357,19 @@ k=1;
 while k < 13
     max_ampl(k) = max(peaks{1,k});
     min_ampl(k) = min(peaks{1,k});
+    max_ampl_s(k) = max(speaks{1,k});
+    min_ampl_s(k) = max(speaks{1,k});
     
     % Voltage averaging of peaks for 12 leads
     max_sum(k) = sum(peaks{1,k});
     max_avg(k) = max_sum(k)/12;
-    
     min_sum(k) = sum(peaks{1,k});
     min_avg(k) = min_sum(k)/12;
+    
+    max_sum_s(k) = sum(speaks{1,k});
+    max_avg_s(k) = max_sum_s(k)/12;
+    min_sum_s(k) = sum(speaks{1,k});
+    min_avg_s(k) = min_sum_s(k)/12;
     
     k=k+1;
 end
@@ -398,6 +404,18 @@ while k < 13
     k=k+1;
 end
 
+% Reversed RA and LL limb lead check: Inverted P-QRS in Lead II
+% If s-peaks > r-peaks from QRS detection with wavelet, signal is inverted
+if max_avg(2) > max_avg_s(2)
+    F_RA_LL = 1;
+end
+
+% Reversed RA and LL limb lead check: Inverted P-QRS in Lead II
+% If s-peaks > r-peaks from QRS detection with wavelet, signal is inverted
+if max_avg(2) > max_avg_s(2)
+    F_RA_LL = 1;
+end
+
 % Beats per minute calculation:
 % Patients heartbeat, frequency of beats- in gui
 t_total = max(t1);  %msec; generally 10sec but can be smaller
@@ -410,6 +428,39 @@ while i < 13
     i=i+1;
 end
 avg_bpm = (sum_bpm*6)/12; %averaging of all 12 leads number of peaks, for contingency
+
+%12 Lead plot
+figure
+subplot(6,2,1);
+plot(t1, l_1);
+title('12 Lead ECG Plot')
+subplot(6,2,2);
+plot(t1, l_2);
+subplot(6,2,3);
+plot(t1, l_3);
+ylabel('Voltage (mV)')
+subplot(6,2,4);
+plot(t1, l_4);
+subplot(6,2,5);
+plot(t1, l_5);
+subplot(6,2,6);
+plot(t1, l_6);
+xlabel('Time (sec)')
+subplot(6,2,7);
+plot(t1, l_7);
+subplot(6,2,8);
+plot(t1, l_8);
+subplot(6,2,9);
+plot(t1, l_9);
+subplot(6,2,10);
+plot(t1, l_10);
+subplot(6,2,11);
+plot(t1, l_11);
+subplot(6,2,12);
+plot(t1, l_12);
+xlabel('Time (sec)')
+
+
 
 %Wavelet just for visualization of approximations of compression on D
 %matrix
