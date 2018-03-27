@@ -5,7 +5,7 @@
 
 %Load data from text file folder
 %ecg = load('1003574.txt');
-ecg = load('1004502.txt');
+ecg = load('1005639.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -127,7 +127,7 @@ while (i < 13) && (j < 15)
     ydb2{1,i} = imodwt(db2rec{1,i},'db2');
 
     %peak detection
-    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',30,'MinPeakDistance',150);
+    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',20,'MinPeakDistance',150);
     [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',20,'MinPeakDistance',150);
     
     figure(i)
@@ -319,7 +319,7 @@ while k < 13
         submatrix_D = D(count_1:count_2, k);
         max_submatrix_D = max(submatrix_D);
         
-        if (max_submatrix_D > 2000)
+        if (max_submatrix_D >= 2000) %2000uV = 2mV
             F_Max = 1;
             F_EMG = 1;
         end
@@ -386,7 +386,7 @@ k=1;
 checklow = 0;
 while k < 13
     min_length = length(peaks{k});
-    if max_ampl(k) < 125 || min_length < 4  %thresholding check: if not enough peaks detected, or min ampl = low saturation
+    if max_ampl(k) <= 0.125 || min_length < 3  %thresholding check: if not enough peaks found by peak finder or min ampl <= 0.125mV = low saturation
         checklow = checklow+1;
     end
     if checklow == 3
@@ -455,39 +455,66 @@ figure
 subplot(6,2,1);
 plot(t1, l_1);
 title('Lead I','FontSize', 8)
+axis([0 10 -500 500]);
+ylabel('Voltage (mV)')
+grid on
+grid minor
 subplot(6,2,2);
 plot(t1, l_2);
 title('Lead II','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,3);
 plot(t1, l_3);
 title('Lead III','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,4);
 plot(t1, l_4);
 title('Lead aVR','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,5);
 plot(t1, l_5);
 title('Lead aVL','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,6);
 plot(t1, l_6);
 title('Lead aVF','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,7);
 plot(t1, l_7);
 title('Lead V1','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,8);
 plot(t1, l_8);
 title('Lead V2','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,9);
 plot(t1, l_9);
 title('Lead V3','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,10);
 plot(t1, l_10);
 title('Lead V4','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 subplot(6,2,11);
 plot(t1, l_11);
 title('Lead V5','FontSize', 8)
+axis([0 10 -500 500]);
+xlabel('Time (sec)')
+grid minor
 subplot(6,2,12);
 plot(t1, l_12);
 title('Lead V6','FontSize', 8)
+axis([0 10 -500 500]);
+grid minor
 xlabel('Time (sec)')
 
 %Wavelet just for visualization of approximations of compression on D
