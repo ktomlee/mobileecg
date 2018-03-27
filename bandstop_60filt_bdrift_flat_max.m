@@ -15,16 +15,6 @@ Fv = linspace(0, 1, fix(L/2)+1)*(fs/2);
 Iv = 1:length(Fv);
 Lead=num2cell(ecg,1);
 
-%Debugging: Simple plot of original ecg lead 4
-F=num2cell(ecg,1);
-figure
-subplot(3,1,1)
-plot(F{2});
-subplot(3,1,2)
-plot(F{3});
-subplot(3,1,3)
-plot(F{4});
-
 %Flags for signal discrepencies
 %All flags set to 0 for initial conditions of 12 leads
 F_RA_LA = 0;    %RA and LA lead reversal
@@ -34,6 +24,16 @@ F_Flat = 0;     %Flat signal line
 F_Min = 0;      %Minimum amplitude on 3 channels
 F_Max = 0;      %Saturation on 1 channel
 F_Baseline = 0; %Baseline drift too large on any lead
+
+%Debugging: Simple plot of original ecg lead 4
+F=num2cell(ecg,1);
+%figure
+%subplot(3,1,1)
+%plot(F{2});
+%subplot(3,1,2)
+%plot(F{3});
+%subplot(3,1,3)
+%plot(F{4});
 
 % Filtering variables
 order = 6;
@@ -45,24 +45,29 @@ fcuthigh=100;   %high cut frequency in Hz
 bandstop = designfilt('bandstopiir','FilterOrder',2, ...
                'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
                'DesignMethod','butter','SampleRate',fs);
-          
-%60Hz filter magnitude response
+%60Hz notch filter magnitude response
 fvtool(bandstop,'Fs',fs)
-%60Hz filter impulse response
+%60Hz notch filter impulse response
 impz(bandstop,50)
 
+%1.0 - 100Hz bandpass filter
 bandpass = designfilt('bandpassiir','FilterOrder',4, ...
-    'HalfPowerFrequency1',0.5,'HalfPowerFrequency2',100, ...
+    'HalfPowerFrequency1',1.5,'HalfPowerFrequency2',100, ...
     'SampleRate',fs);
-
 %Bandpass filter magnitude response
 fvtool(bandpass, 'fs', fs);
-%60Hz filter impulse response
+%Bandpass filter impulse response
 impz(bandpass,50)
+
+%Bandpass IIR Filter: Unused
+%bpFilt = designfilt('bandpassiir','FilterOrder',20, ...
+%         'HalfPowerFrequency1',1.0,'HalfPowerFrequency2',120, ...
+%         'SampleRate',fs);
+%fvtool(bpFilt, 'fs', fs);
+%impz(bpFilt,50)
 
 i = 2;
 filtLead={};
-
 while i < 14
     filtLead{1,i-1} = filtfilt(bandstop,Lead{1,i});
     filtLead{1,i-1} = filtfilt(bandpass,filtLead{1,i-1});
@@ -87,7 +92,6 @@ end
 %    end
 %    peak{1,i}(peak{1,i} == 0) =[];
 %    time{1,i}(time{1,i}==0)=[];
-    
 %    i = i+1;
 %end
 %i = 1;
@@ -113,7 +117,8 @@ ydb2 = {};
 peaks = {};
 locs = {};
 i = 1;
-while i < 13
+
+while (i < 13) && (j < 15)
 
     db2{1,i} = modwt(ecg(:,i+1),'db2',5);
     db2rec{1,i} = zeros(size(db2{1,i}));
@@ -133,6 +138,42 @@ while i < 13
     hold on
     plot(slocs{1,i},-speaks{1,i},'bo')
     grid
+    if i==1
+        title('Lead 1');
+    end
+    if i==2
+        title('Lead 2');
+    end
+    if i==3
+        title('Lead 3');
+    end
+    if i==4
+        title('Lead 4');
+    end
+    if i==5
+        title('Lead 5');
+    end
+    if i==6
+        title('Lead 6');
+    end
+    if i==7
+        title('Lead 7');
+    end
+    if i==8
+        title('Lead 8');
+    end
+    if i==9
+        title('Lead 9');
+    end
+    if i==10
+        title('Lead 10');
+    end
+    if i==11
+        title('Lead 11');
+    end
+    if i==12
+        title('Lead 12');
+    end    
     %legend('ECG Signal','R-waves','S-waves','Location','northeastoutside')
     xlabel('Seconds')
 
@@ -140,11 +181,9 @@ while i < 13
     plot(t, ecg(:,i+1));
      grid
     xlabel('Seconds')
+    i = i+1;
     
-    i = i + 1;
-    
-end
-i = 1; 
+end 
 
 % Baseline drift elimination:
 % Output is 'D' the detrended signal for 12 leads, after filtering
@@ -184,6 +223,44 @@ while j < 13
     j=j+1;
 end
 
+%Fast fourier transform to find signal frequency properties pre filtering
+i=2;
+figure
+while i < 14
+    fresult = fft(F{i});
+    P2 = abs(fresult/L);
+    P1 = P2(1:L/2+1);
+    P1(2:end-1) = 2*P1(2:end-1);
+    f = fs*(0:(L/2))/L;  % frequency domain f
+    plot(f, P1) % Single sided spectrum
+    hold on
+    title('Single-Sided Amplitude Spectrum: All leads pre-filtering')
+    xlabel('Frequency (Hz)')
+    ylabel('Amplitude |P1(f)|')
+    axis([0 100 0 inf]);
+    
+    i=i+1;
+end
+%Fast fourier transform to find signal frequency prpoerties after filtering
+
+i=1;
+figure
+while i < 13
+    fresult = fft(filtLead{1,i});
+    P2 = abs(fresult/L);
+    P1 = P2(1:L/2+1);
+    P1(2:end-1) = 2*P1(2:end-1);
+    f = fs*(0:(L/2))/L;  % frequency domain f
+    plot(f, P1) % Single sided spectrum
+    hold on
+    title('Single-Sided Amplitude Spectrum: All leads after filtering')
+    xlabel('Frequency (Hz)')
+    ylabel('Amplitude |P1(f)|')
+    axis([0 100 0 inf]);
+    
+    i=i+1;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Processing
 %Misplaced electrode, low and high amplitude, motion artifacts,
@@ -192,8 +269,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Indices set
-k=1;
-j=1;
+i = 1;
+j = 1;
+k = 1;
 
 %Initialize matrices to zeros
 max_ampl = zeros(1,12);
@@ -205,11 +283,11 @@ min_avg = zeros(1,12);
 
 %Lead Initialization
 %filtLead = lead data after all filtering
-l_1=D(:,1);    %Lead I: Small Q wave, largest R, small or no S, upright T
-l_2=D(1,2);    %Lead II: No Q wave, large R, small or no S, upright T 
+l_1=D(:,1);    %Lead I: Small Q wave, medium R, small S, upright T
+l_2=D(1,2);    %Lead II: No Q wave, large R, small S, upright T 
 l_3=D(1,3);    %Lead III: Small Q wave, variable R, variable S, variable T
 l_4=D(1,4);    %aVR: Variable Q wave, small R, large S, inverted T 
-l_5=D(1,5);    %avL: Variable Q wave, varialbe R wave, none to large S, variable T
+l_5=D(1,5);    %avL: Variable Q wave, variable R wave, none to large S, variable T
 l_6=D(1,6);    %avF: small Q wave, small R, variable S, variable T
 l_7=D(1,7);    %V1: QS complex, small R, large S, variable T
 l_8=D(1,8);    %V2: No Q wave, larger R than V1, large S, unpright T
@@ -222,7 +300,6 @@ l_12=D(1,12);  %V6: small Q wave, smaller R than V5, smaller S than V5, upright 
 % If any lead is considered high amplitude (greater than 2mV for excerpt of continuous 200 msec ),
 % F_max is set to 1, and 12-lead ECG is considered unacceptable due to motion artifacts or EMG
 % noise.
-%checkhigh = 0;
 x=0;
 
 while k < 13
@@ -238,6 +315,7 @@ while k < 13
         
         if (max_submatrix_D > 2000)
             F_Max = 1;
+            F_EMG = 1;
         end
         x=x+1;
     end
@@ -310,9 +388,11 @@ end
 % EMG Noise condition:
 % If peak[] length is greater than 100; peaks too frequent to be bpm; set
 % EMG noise flag to 1.
+% Heart rate between range of 30bbm - 300bpm is reasonably within the human range;
+% Resting heartrate of 100-300bpm can indicate the patient is tachycardic.
 k=1;
 while k < 13
-    if length(peaks{1,k}) > 100
+    if (length(peaks{1,k}) > 50) || (length(peaks{1,k}) < 5) % 390bpm or 30bpm 
         F_EMG = 1;
     end
     k=k+1;
@@ -324,13 +404,12 @@ t_total = max(t1);  %msec; generally 10sec but can be smaller
 sum_bpm = 0;
 avg_bpm = 0;
 i = 1;
-
 while i < 13
     peaks_i_length = length(peaks{1,i});
     sum_bpm = sum_bpm + peaks_i_length;  %number of peaks for 6*10sec sample = extension to 60sec of data
     i=i+1;
 end
-avg_bpm = (sum_bpm*6)/12;
+avg_bpm = (sum_bpm*6)/12; %averaging of all 12 leads number of peaks, for contingency
 
 %Wavelet just for visualization of approximations of compression on D
 %matrix
