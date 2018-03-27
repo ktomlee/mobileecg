@@ -5,7 +5,7 @@
 
 %Load data from text file folder
 %ecg = load('1003574.txt');
-ecg = load('1005639.txt');
+ecg = load('1004502.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -424,8 +424,8 @@ end
 
 % Reversed RA and LL limb lead check: Inverted P-QRS in Lead II (lead shows
 % difference between LL and RA, directed towards LL at 60deg)
-% If s-peaks > r-peaks from QRS detection with wavelet, signal is inverted
-if max_avg(2) < max_avg_s(2)
+% If s-peaks > r-peaks from QRS detection with wavelet, and Leads I and III switch places (I now greater than III), signal is inverted
+if (max_avg(2) < max_avg_s(2)) && (max_avg(1) > max_avg(3))
     F_RA_LL = 1;
 end
 
