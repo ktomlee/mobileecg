@@ -1,4 +1,4 @@
-ecg = load('1002867.txt');
+ecg = load('1063073.txt');
 
 L = length(ecg);
 fs = 500;
@@ -38,6 +38,13 @@ while i < 13
      grid
     xlabel('Seconds')
     
+    if(size(peaks{1,i}) < 3)
+        fprintf('Not enough peaks were detected at %i\n', i);
+    end
+    
+    if(max(peaks{1,i}) > 500)
+        fprintf('High amplitude detected at %i\n', i);
+    end
     
     i = i + 1;
     
