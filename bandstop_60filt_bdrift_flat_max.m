@@ -127,8 +127,8 @@ while (i < 13) && (j < 15)
     ydb2{1,i} = imodwt(db2rec{1,i},'db2');
 
     %peak detection
-    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',20,'MinPeakDistance',150);
-    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',20,'MinPeakDistance',150);
+    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',15,'MinPeakDistance',150);
+    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',15,'MinPeakDistance',150);
     
     figure(i)
     clf
@@ -319,7 +319,7 @@ while k < 13
         submatrix_D = D(count_1:count_2, k);
         max_submatrix_D = max(submatrix_D);
         
-        if (max_submatrix_D >= 2000) %2000uV = 2mV
+        if (max_submatrix_D >= 1000) %2000uV = 2mV
             F_Max = 1;
             F_EMG = 1;
         end
@@ -406,7 +406,7 @@ k=1;
 checklow = 0;
 while k < 13
     min_length = length(peaks{k});
-    if max_ampl(k) <= 0.125 || min_length < 3  %thresholding check: if not enough peaks found by peak finder or min ampl <= 0.125mV = low saturation
+    if max_ampl(k) <= 15 || min_length < 3  %thresholding check: if not enough peaks found by peak finder or min ampl <= 0.125mV = low saturation
         checklow = checklow+1;
     end
     if checklow == 3
@@ -436,7 +436,7 @@ while i<13
     if (peak_num > 46) ||  freq_peak > 150 % 290bpm and greater, or frequency amplitude of lead is above 40
         F_EMG = 1;
     end
-    if (length(peaks{1,i}) > 5)
+    if (length(peaks{1,i}) < 5)
         F_Contact = 1;
     end
     i=i+1;
@@ -444,8 +444,8 @@ end
 
 % Reversed RA and LL limb lead check: Inverted P-QRS in Lead II (lead shows
 % difference between LL and RA, directed towards LL at 60deg)
-% If s-peaks > r-peaks from QRS detection with wavelet, and Leads I and III switch places (I now greater than III), signal is inverted
-if (max_avg(2) < max_avg_s(2)) && (max_avg(1) > max_avg(3))
+% If s-peaks > r-peaks from QRS detection with wavelet, and Leads avR and aVF switch places (I now greater than III), signal is inverted
+if (max_avg(2) < max_avg_s(2)) && (max_avg(4) > max_avg(6))
     F_RA_LL = 1;
 end
 
