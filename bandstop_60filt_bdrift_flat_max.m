@@ -4,7 +4,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Load data from text file folder
-ecg = load('1002867.txt');
+ecg = load('1003574.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -398,8 +398,11 @@ end
 % Resting heartrate of 100-300bpm can indicate the patient is tachycardic.
 k=1;
 while k < 13
-    if (length(peaks{1,k}) > 50) || (length(peaks{1,k}) < 5) % 390bpm or 30bpm 
+    if (length(peaks{1,k}) > 50) % 390bpm or 30bpm 
         F_EMG = 1;
+    end
+    if (length(peaks{1,k}) < 5)
+        F_Contact = 1;
     end
     k=k+1;
 end
@@ -461,6 +464,8 @@ plot(t1, l_11);
 subplot(6,2,12);
 plot(t1, l_12);
 xlabel('Time (sec)')
+
+
 
 %Wavelet just for visualization of approximations of compression on D
 %matrix
