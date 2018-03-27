@@ -433,7 +433,7 @@ while i<13
     freq_peak = freq_max - freq_min; %WRONG
     peak_num = length(peaks{1,i});
     
-    if (peak_num > 46) ||  freq_peak > 150 % 290bpm and greater, or frequency amplitude of lead is above 40
+    if (peak_num > 50) ||  freq_peak > 175 % 290bpm and greater, or frequency amplitude of lead is above 40
         F_EMG = 1;
     end
     if (length(peaks{1,i}) < 5)
@@ -445,7 +445,7 @@ end
 % Reversed RA and LL limb lead check: Inverted P-QRS in Lead II (lead shows
 % difference between LL and RA, directed towards LL at 60deg)
 % If s-peaks > r-peaks from QRS detection with wavelet, and Leads avR and aVF switch places (I now greater than III), signal is inverted
-if (max_avg(2) < max_avg_s(2)) && (max_avg(4) > max_avg(6))
+if (max_avg(2) < max_avg_s(2)) && (max_avg(4) > max_avg(6)) && (max_avg(1)<max_avg_s(1))
     F_RA_LL = 1;
 end
 
@@ -453,6 +453,7 @@ end
 % difference between RA and LA, directed towards LA at 0deg), and often
 % Lead aVR becomes positive.
 % If s-peaks > r-peaks in Lead I AND aVR becomes positive, F_RA_LA set to 1
+% May simulate dextrocardia
 if (max_avg(1) < max_avg_s(1)) && (max_avg(4) > max_avg_s(4))
     F_RA_LA = 1;
 end
