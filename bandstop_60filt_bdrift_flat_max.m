@@ -4,7 +4,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Load data from text file folder
-ecg = load('1002867.txt');
+ecg = load('1045434.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -14,6 +14,16 @@ t1=(0:L-1)/fs;
 Fv = linspace(0, 1, fix(L/2)+1)*(fs/2);
 Iv = 1:length(Fv);
 Lead=num2cell(ecg,1);
+
+%Debugging: Simple plot of original ecg lead 4
+F=num2cell(ecg,1);
+figure
+subplot(3,1,1)
+plot(F{2});
+subplot(3,1,2)
+plot(F{3});
+subplot(3,1,3)
+plot(F{4});
 
 %Flags for signal discrepencies
 %All flags set to 0 for initial conditions of 12 leads
@@ -40,7 +50,6 @@ bandstop = designfilt('bandstopiir','FilterOrder',2, ...
 fvtool(bandstop,'Fs',fs)
 %60Hz filter impulse response
 impz(bandstop,50)
-
 
 bandpass = designfilt('bandpassiir','FilterOrder',4, ...
     'HalfPowerFrequency1',0.5,'HalfPowerFrequency2',100, ...
@@ -84,8 +93,8 @@ while i < 13
     i = i+1;
 end
 
-figure(2);
 i = 1;
+figure(2)
 while i < 13
    subplot(12,1,i);
    plot(t1, filtLead{i});
@@ -107,11 +116,6 @@ end
 % C is the cellularized matrix of the 12 leads
 filt_lead_mat = cell2mat(filtLead);
 C=num2cell(filt_lead_mat,1); %call C{1}...C{12}
-
-%Debugging: Simple plot of original ecg lead 4
-F=num2cell(ecg,1);
-figure
-plot(t1, F{5});
 
 %Initialize detrended lead data matrix 'D' to be zeros
 D = zeros(L, 12);
@@ -182,9 +186,8 @@ l_12=D(1,12);  %V6
 % If any lead is considered high amplitude (greater than 2mV for excerpt of continuous 200 msec ),
 % F_max is set to 1, and 12-lead ECG is considered unacceptable due to motion artifacts or EMG
 % noise.
-checkhigh = 0;
+%checkhigh = 0;
 x=0;
-k=1;
 
 while k < 13
     while x < 50
@@ -254,36 +257,79 @@ end
 k=1;
 
 % Low amplitude condition and flag setting:
-% If three leads are considered low amplitude (less than 125mV), F_Min is set to 1, and
+% If three leads are considered low amplitude (less than 125uV), F_Min is set to 1, and
 % 12-lead ECG is considered unacceptable due to possible poor skin-electrode
 % contact.
 checklow = 0;
 while k < 13
-    if max_ampl(k) < 125
+    min_length = length(peak{k});
+    if max_ampl(k) < 125 || min_length < 4  %thresholding check: if not enough peaks detected, or min ampl = low saturation
         checklow = checklow+1;
     end
     if checklow == 3
         F_Min = 1;
     end
     k=k+1;
+end                                
+        
+% EMG Noise condition:
+% If peak[] length is greater than 100; peaks too frequent to be bpm; set
+% EMG noise flag to 1.
+k=1;
+while k < 13
+    if length(peak{1,k}) > 100
+        F_EMG = 1;
+    end
+    k=k+1;
 end
-                                
-%QRS Detection using thresholding to find peaks of interest
-[~,locs_Rwave] = findpeaks(ECG_data,'MinPeakHeight',0.5,...
-                                    'MinPeakDistance',200);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% QRS Detection using thresholding to find peaks of interest
+% 100 = min peak height of R wave; 300 = less than minimum distance between
+% subsequent peaks
+i = 1;
+%while i < 2
+ %   [~,locs_Rwave] = findpeaks(D(1,:),'MinPeakHeight',100,...
+  %                                      'MinPeakDistance',300);
+  %  figure
+  %  hold on 
+  %  plot(t1,D)
+  %  plot(locs_Rwave,D(locs_Rwave),'rv','MarkerFaceColor','r')
+%end
+
+%Wavelet for pre-peak finder; 
+%Wavelet to get approximation and details from D matrix
+i = 1;
+while i < 13  
+    D_wave=num2cell(D,1);
+    [a1,d1] = dwt(D_wave{i}, 'db2');
+    [a2,d2] = dwt(a1, 'db2');
+    [a3,d3] = dwt(a2, 'db2');
+    [a4,d4] = dwt(a3, 'db2');
+    [a5,d5] = dwt(a4, 'db2');
+    i=i+1;
+
+    %Plot approximations of ecg signal for a1-a5 daub wavelet coefficients
+    %to determine best compression factor (a3)
+    %figure
+    %subplot(5,1,1);
+    %plot(a1);
+    %title('Approximation Levels 1-4');
+    %subplot(5,1,2);
+    %plot(a2);
+    %subplot(5,1,3);
+    %plot(a3);
+    %subplot(5,1,4);
+    %plot(a4);
+    %subplot(5,1,5);
+    %plot(a5);
+end
+i=0;
 
 % Beats per minute calculation:
 % Patients heartbeat, frequency of beats- in gui
+% Change to new code
 t_total = max(t1);  %msec
 bpm = length(peak{1,1})*6;  %number of peaks for 6*10sec sample
-
-
-
-
-
-
-
-
-
 
 
