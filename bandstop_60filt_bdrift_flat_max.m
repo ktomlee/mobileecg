@@ -404,16 +404,19 @@ while k < 13
     k=k+1;
 end
 
-% Reversed RA and LL limb lead check: Inverted P-QRS in Lead II
+% Reversed RA and LL limb lead check: Inverted P-QRS in Lead II (lead shows
+% difference between LL and RA, directed towards LL at 60deg)
 % If s-peaks > r-peaks from QRS detection with wavelet, signal is inverted
-if max_avg(2) > max_avg_s(2)
+if max_avg(2) < max_avg_s(2)
     F_RA_LL = 1;
 end
 
-% Reversed RA and LL limb lead check: Inverted P-QRS in Lead II
-% If s-peaks > r-peaks from QRS detection with wavelet, signal is inverted
-if max_avg(2) > max_avg_s(2)
-    F_RA_LL = 1;
+% Reversed RA and LA limb lead check: Inverted P-QRS in Lead I (lead shows
+% difference between RA and LA, directed towards LA at 0deg), and often
+% Lead aVR becomes positive.
+% If s-peaks > r-peaks in Lead I AND aVR becomes positive, F_RA_LA set to 1
+if (max_avg(1) < max_avg_s(1)) && (max_avg(4) > max_avg_s(4))
+    F_RA_LA = 1;
 end
 
 % Beats per minute calculation:
@@ -445,7 +448,6 @@ subplot(6,2,5);
 plot(t1, l_5);
 subplot(6,2,6);
 plot(t1, l_6);
-xlabel('Time (sec)')
 subplot(6,2,7);
 plot(t1, l_7);
 subplot(6,2,8);
@@ -459,8 +461,6 @@ plot(t1, l_11);
 subplot(6,2,12);
 plot(t1, l_12);
 xlabel('Time (sec)')
-
-
 
 %Wavelet just for visualization of approximations of compression on D
 %matrix
