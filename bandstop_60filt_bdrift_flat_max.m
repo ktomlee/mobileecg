@@ -333,7 +333,7 @@ while k < 13
     k=k+1;
     
 end
-I
+
 % Flat line condition and flag setting:
 % If any lead is considered to to a constant 0 voltage for at least 1sec
 % length, F_Flat is set to 1, and 12-lead ECG is considered unacceptable.
