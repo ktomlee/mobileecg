@@ -1,11 +1,12 @@
-\%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Pre-processing:
 % Bandpass, bandstop, notch filter, peak detection
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Load data from text file folder
-ecg = load('1002867.txt');
+%ecg = load('1002867.txt'); %good signal
 %ecg = load('1003574.txt'); %Random signals
+ecg = load('1013179.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -127,8 +128,8 @@ while (i < 13) && (j < 15)
     ydb2{1,i} = imodwt(db2rec{1,i},'db2');
 
     %peak detection
-    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',20,'MinPeakDistance',150);
-    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',20,'MinPeakDistance',150);
+    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',25,'MinPeakDistance',150);
+    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',25,'MinPeakDistance',150);
     
     figure(i)
     clf
@@ -138,50 +139,52 @@ while (i < 13) && (j < 15)
     plot(locs{1,i},peaks{1,i},'ro')
     hold on
     plot(slocs{1,i},-speaks{1,i},'bo')
-    grid
+    grid on;
     if i==1
-        title('Lead 1');
+        title('Lead 1 DWT');
     end
     if i==2
-        title('Lead 2');
+        title('Lead 2 DWT');
     end
     if i==3
-        title('Lead 3');
+        title('Lead 3 DWT');
     end
     if i==4
-        title('Lead 4');
+        title('Lead 4 DWT');
     end
     if i==5
-        title('Lead 5');
+        title('Lead 5 DWT');
     end
     if i==6
-        title('Lead 6');
+        title('Lead 6 DWT');
     end
     if i==7
-        title('Lead 7');
+        title('Lead 7 DWT');
     end
     if i==8
-        title('Lead 8');
+        title('Lead 8 DWT');
     end
     if i==9
-        title('Lead 9');
+        title('Lead 9 DWT');
     end
     if i==10
-        title('Lead 10');
+        title('Lead 10 DWT');
     end
     if i==11
-        title('Lead 11');
+        title('Lead 11 DWT');
     end
     if i==12
-        title('Lead 12');
+        title('Lead 12 DWT');
     end    
     %legend('ECG Signal','R-waves','S-waves','Location','northeastoutside')
-    xlabel('Seconds')
+    xlabel('Time (msec)', 'FontSize', 8), ylabel('Scaled Voltage Amplitude (u)', 'FontSize', 8);
+    axis([0 5000 -250 500]);
 
     subplot(1,2,2);
     plot(t, ecg(:,i+1));
-     grid
-    xlabel('Seconds')
+    grid on;
+    xlabel('Time (msec)', 'FontSize', 8), ylabel('Scaled Voltage Amplitude (u)', 'FontSize', 8);
+    axis([0 5000 -250 500]);
     i = i+1;
     
 end 
@@ -323,7 +326,7 @@ while k < 13
         submatrix_D = D(count_1:count_2, k);
         max_submatrix_D = max(submatrix_D);
         
-        if (max_submatrix_D >= 1000) %2000uV = 2mV
+        if (max_submatrix_D >= 2500) %2000uV = 2.5mV
             F_Max = 1;
             %F_EMG = 1;
         end
@@ -341,16 +344,16 @@ y=0;
 k=1;
 while k < 13
     while y < 10
-        f_count_1 = 1+(y*500);
-        f_count_2 = 500+(y*500);
+        ount_1 = 1+(y*500);
+        count_2 = 500+(y*500);
         %column_y = y+1;
         
         %200msec = 100 samples out of 5000 samples per D value
         %s_mat = D(1:100, 1);    %trial
-        f_submatrix_D = D(f_count_1:f_count_2, k);
-        f_max_submatrix_D = max(f_submatrix_D);
+        f_submatrix_D = D(count_1:count_2, k);
+        max_submatrix_D = max(f_submatrix_D);
         
-        if (f_max_submatrix_D == 0)
+        if (max_submatrix_D == 0)
             F_Flat = 1;
         end
         y=y+1;
@@ -448,7 +451,7 @@ end
 
 % Reversed RA and LL limb lead check: Inverted P-QRS in Lead II (lead shows
 % difference between LL and RA, directed towards LL at 60deg)
-% If s-peaks > r-peaks from QRS detection with wavelet, and Leads avR and aVF switch places (I now greater than III), signal is inverted
+% If s-peaks > r-peaks from QRS detection with wavelet, and Leads avR and aVF switch places (I now greater than III), Lead I is inverted
 if (max_avg(2) < max_avg_s(2)) && (max_avg(4) > max_avg(6)) && (max_avg(1)<max_avg_s(1))
     F_RA_LL = 1;
 end
