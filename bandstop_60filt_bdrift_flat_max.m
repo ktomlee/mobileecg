@@ -4,8 +4,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Load data from text file folder
-%ecg = load('1003574.txt');
-ecg = load('1009404.txt');
+ecg = load('1002867.txt');
+%ecg = load('1003574.txt'); %Random signals
 
 % Signal Variables
 L = length(ecg);
@@ -205,20 +205,24 @@ while j < 13
     D(:,j) = C{j} - f_y(:,j);   % Detrend data using polyfit curve f_y
 
     subplot(3,1,1);
-    plot(t1, D);
-    title('Detrended ECG Signal'), xlabel('Time (sec)'), ylabel('Voltage(uV)')
+    plot(t1, C{j});
+    title('Original ECG Signal');
+    xlabel('Time (sec)', 'FontSize', 8), ylabel('Voltage(uV)','FontSize', 8)
     axis([0 10 -500 500]);  %Mutual axes
     hold on
     
     subplot(3,1,2);
-    plot(t1, C{j});
-    title('Original ECG Signal'), xlabel('Time (sec)'), ylabel('Voltage(uV)')
+    plot(t1, D);
+    title('Detrended ECG Signal');
+    xlabel('Time (sec)', 'FontSize', 8), ylabel('Voltage(uV)','FontSize', 8)
     axis([0 10 -500 500]);
     hold on
     
     subplot(3,1,3);
     plot(t1,f_y);
-    title('Trend line');
+    title('Polyfit Trend Line');
+    xlabel('Time (sec)', 'FontSize', 8), ylabel('Voltage(uV)','FontSize', 8)
+    axis([0 10 -500 500]);
     
     hold on
     
@@ -321,7 +325,7 @@ while k < 13
         
         if (max_submatrix_D >= 1000) %2000uV = 2mV
             F_Max = 1;
-            F_EMG = 1;
+            %F_EMG = 1;
         end
         x=x+1;
     end
@@ -429,8 +433,8 @@ while i<13
     P1(2:end-1) = 2*P1(2:end-1);
     
     freq_max = max(P1);
-    freq_min =min(P1);
-    freq_peak = freq_max - freq_min; %WRONG
+    freq_min = min(P1);
+    freq_peak = freq_max - freq_min;
     peak_num = length(peaks{1,i});
     
     if (peak_num > 50) ||  freq_peak > 175 % 290bpm and greater, or frequency amplitude of lead is above 40
