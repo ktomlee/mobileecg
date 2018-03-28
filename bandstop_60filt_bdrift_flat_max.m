@@ -6,7 +6,7 @@
 %Load data from text file folder
 %ecg = load('1002867.txt'); %good signal
 %ecg = load('1003574.txt'); %Random signals
-ecg = load('1013179.txt');
+ecg = load('1628173.txt');
 
 % Signal Variables
 L = length(ecg);
@@ -570,4 +570,12 @@ while i < 13
     %plot(a4);
     %subplot(5,1,5);
     %plot(a5);
+end
+
+if F_RA_LA == 1 || F_RA_LL ==1 || F_EMG ==1|| F_Flat ==1 || F_Min ==1 || F_Max ==1 || F_Baseline ==1 || F_Contact ==1
+    U='Unacceptable Signal';
+    disp(U);
+else
+    A='Acceptable Signal';
+    dispt(A);
 end
