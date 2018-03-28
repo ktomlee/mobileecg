@@ -127,8 +127,8 @@ while (i < 13) && (j < 15)
     ydb2{1,i} = imodwt(db2rec{1,i},'db2');
 
     %peak detection
-    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',15,'MinPeakDistance',150);
-    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',15,'MinPeakDistance',150);
+    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',20,'MinPeakDistance',150);
+    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',20,'MinPeakDistance',150);
     
     figure(i)
     clf
