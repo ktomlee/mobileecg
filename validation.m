@@ -8,7 +8,7 @@ pass = 0;
 l = 1;
 
 
-while l < 226
+while l < 774
     
         %TotalECG{1,l} = load([num2str(acceptable(l,1)), '.txt']);
         %if i < 226
@@ -16,7 +16,7 @@ while l < 226
         %end
     fprintf('Checking record: %i\n', l);
 
-    ecg = load([num2str(unacceptable(l,1)), '.txt']);
+    ecg = load([num2str(acceptable(l,1)), '.txt']);
     Lead=num2cell(ecg,1);
 
     % Signal Variables
@@ -398,7 +398,7 @@ end
 avg_bpm = (sum_bpm*6)/12; %averaging of all 12 leads number of peaks, for contingency
 
     
-    if(F_RA_LA || F_RA_LL || F_EMG || F_Flat || F_Min || F_Max || F_Baseline || ~F_Contact == 1)
+    if(F_RA_LA || F_RA_LL || F_EMG || F_Flat || F_Min || F_Max || F_Baseline || F_Contact == 1)
         fprintf('This ECG data is unacceptable \n');
         F_Acceptable = 0;
         if(F_RA_LA)
@@ -439,7 +439,7 @@ avg_bpm = (sum_bpm*6)/12; %averaging of all 12 leads number of peaks, for contin
         pass = pass + 1;
     end
     
-    results(l,:) =  [F_Acceptable F_RA_LA F_RA_LL F_EMG F_Flat F_Max F_Baseline ~F_Contact];
+    results(l,:) =  [F_Acceptable F_RA_LA F_RA_LL F_EMG F_Flat F_Max F_Baseline F_Contact];
 
 l = l + 1;
 
