@@ -413,7 +413,7 @@ k=1;
 checklow = 0;
 while k < 13
     min_length = length(peaks{k});
-    if max_ampl(k) <= 15 || min_length < 3  %thresholding check: if not enough peaks found by peak finder or min ampl <= 0.125mV = low saturation
+    if max_ampl(k) <= 15 && min_length < 3  %thresholding check: if not enough peaks found by peak finder or min ampl <= 0.125mV = low saturation
         checklow = checklow+1;
     end
     if checklow == 3
