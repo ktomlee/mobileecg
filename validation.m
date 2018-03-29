@@ -5,15 +5,20 @@ TotalECG = {};
 results = [];
 pass = 0;
 
+num_f_ra_la = 0;
+num_f_ra_ll = 0;
+num_f_emg = 0;
+num_f_flat = 0;
+num_f_min = 0;
+num_f_max = 0;
+num_f_baseline = 0;
+num_f_contact = 0;
+
 l = 1;
 
 
 while l < 774
     
-        %TotalECG{1,l} = load([num2str(acceptable(l,1)), '.txt']);
-        %if i < 226
-        %    TotalECG{2,i} = load([num2str(unacceptable(i,1)), '.txt']);
-        %end
     fprintf('Checking record: %i\n', l);
 
     ecg = load([num2str(acceptable(l,1)), '.txt']);
@@ -84,18 +89,18 @@ while (i < 13) && (j < 15)
     ydb2{1,i} = imodwt(db2rec{1,i},'db2');
 
     %peak detection
-    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',15,'MinPeakDistance',150);
-    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',15,'MinPeakDistance',150);
+    [peaks{1,i},locs{1,i}] = findpeaks(ydb2{1,i}(1,:),t,'MinPeakHeight',10,'MinPeakDistance',150);
+    [speaks{1,i},slocs{1,i}] = findpeaks((-ydb2{1,i}(1,:)),t,'MinPeakHeight',10,'MinPeakDistance',150);
     
-    figure(i)
+    %figure(i)
     clf
-    subplot(1,2,1);
-    plot(t,ydb2{1,i}(1,:))
-    hold on
-    plot(locs{1,i},peaks{1,i},'ro')
-    hold on
-    plot(slocs{1,i},-speaks{1,i},'bo')
-    grid
+    %subplot(1,2,1);
+    %plot(t,ydb2{1,i}(1,:))
+    %hold on
+    %plot(locs{1,i},peaks{1,i},'ro')
+    %hold on
+    %plot(slocs{1,i},-speaks{1,i},'bo')
+    %grid
     if i==1
         title('Lead 1');
     end
@@ -133,12 +138,12 @@ while (i < 13) && (j < 15)
         title('Lead 12');
     end    
     %legend('ECG Signal','R-waves','S-waves','Location','northeastoutside')
-    xlabel('Seconds')
+    %xlabel('Seconds')
 
-    subplot(1,2,2);
-    plot(t, ecg(:,i+1));
-     grid
-    xlabel('Seconds')
+    %subplot(1,2,2);
+    %plot(t, ecg(:,i+1));
+     %grid
+    %xlabel('Seconds')
     i = i+1;
     
 end 
@@ -163,7 +168,8 @@ while j < 13
     
     %Baseline drift flag check
     if f_y(:,j) > 2500
-        F_Baseline = 1;
+        F_Baseline = 1;  
+
     end
     
     j=j+1;
@@ -248,6 +254,7 @@ while k < 13
         if (max_submatrix_D >= 1000) %2000uV = 2mV
             F_Max = 1;
             F_EMG = 1;
+
         end
         x=x+1;
     end
@@ -362,7 +369,7 @@ while i<13
     if (peak_num > 50) ||  freq_peak > 175 % 290bpm and greater, or frequency amplitude of lead is above 40
         F_EMG = 1;
     end
-    if (length(peaks{1,i}) < 5)
+    if (length(peaks{1,i}) < 2)
         F_Contact = 1;
     end
     i=i+1;
@@ -399,47 +406,55 @@ avg_bpm = (sum_bpm*6)/12; %averaging of all 12 leads number of peaks, for contin
 
     
     if(F_RA_LA || F_RA_LL || F_EMG || F_Flat || F_Min || F_Max || F_Baseline || F_Contact == 1)
-        fprintf('This ECG data is unacceptable \n');
+        %fprintf('This ECG data is unacceptable \n');
         F_Acceptable = 0;
         if(F_RA_LA)
-            fprintf('F_RA_LA\n');
+            %fprintf('F_RA_LA\n');
+            num_f_ra_la = num_f_ra_la + 1;
         end
 
         if(F_RA_LL)
-            fprintf('F_RA_LL\n');
+            %fprintf('F_RA_LL\n');
+            num_f_ra_ll = num_f_ra_la + 1;
         end
 
         if(F_EMG)
-            fprintf('F_EMG\n');
+            %fprintf('F_EMG\n');
+            num_f_emg = num_f_emg + 1;
         end
 
         if(F_Flat )
-            fprintf('F_Flat\n');
+            %fprintf('F_Flat\n');
+            num_f_flat = num_f_flat + 1;
         end
 
         if(F_Min)
-            fprintf('F_Min\n');
+            %fprintf('F_Min\n');
+            num_f_min = num_f_min + 1;
         end
 
         if(F_Max)
-            fprintf('F_Max\n');
+            %fprintf('F_Max\n');
+            num_f_max = num_f_max + 1;
         end
 
         if(F_Baseline)
-            fprintf('F_Baseline\n');
+            %fprintf('F_Baseline\n');
+            num_f_baseline = num_f_baseline + 1;
         end
 
         if(F_Contact)
-            fprintf('F_Contact\n');
+            %fprintf('F_Contact\n');
+            num_f_contact = num_f_contact + 1;
         end    
 
     else
-        fprintf('This ECG data is acceptable \n');
+        %fprintf('This ECG data is acceptable \n');
         F_Acceptable = 1;
         pass = pass + 1;
     end
     
-    results(l,:) =  [F_Acceptable F_RA_LA F_RA_LL F_EMG F_Flat F_Max F_Baseline F_Contact];
+    results(l,:) =  [F_Acceptable F_RA_LA F_RA_LL F_EMG F_Flat F_Min F_Max F_Baseline F_Contact];
 
 l = l + 1;
 
