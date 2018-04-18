@@ -327,9 +327,9 @@ while l < 774
     % length, F_Flat is set to 1, and 12-lead ECG is considered unacceptable.
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
     while k < 13
-        while y < 4901
-            f_count_1 = 1 + y;
-            f_count_2 = 100 + y;
+        while x < 4901
+            f_count_1 = 1 + x;
+            f_count_2 = 100 + x;
 
             %200msec = 100 samples out of 5000 samples per D value
             f_submatrix_D = D(f_count_1:f_count_2, k);
@@ -340,9 +340,9 @@ while l < 774
             if (f_min == 0)
                 F_Flat = 1;
             end
-            y=y+1;
+            x=x+1;
         end
-        y=0;
+        x=0;
         k=k+1;
     end
     
